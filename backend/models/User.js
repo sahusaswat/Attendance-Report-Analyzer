@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema({
     role: {
         type: String,
         required: true,
-        anum: ["admin", "manager", "member"],
+        anum: ["admin", "manager", "member", "none"],
     },
 
     organizationId: {
@@ -31,7 +31,7 @@ const userSchema = new mongoose.Schema({
     assignedUsers: {
         type: [mongoose.Schema.Types.ObjectId],
         ref: "User",
-        default: null
+        default: []
     }
 }, {timestamps: true});
 

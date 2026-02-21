@@ -70,7 +70,7 @@ exports.getAttendanceByUser = async (req, res) => {
             return req.status(403).json({message: "You are not authorized"});
         }
 
-        if (req.user.role = "manager" && 
+        if (req.user.role === "manager" && 
             !req.user.assignedUsers.includes(userId)
         ) {
             return res.status(403).json({message: "You don't have access to this user!"})

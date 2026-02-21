@@ -15,11 +15,11 @@ exports.signup = async(req,res) => {
             name,
             email,
             password: hashPassword,
-            role: "member"
+            role: "none"
         });
 
         const token = jwt.sign(
-            {id: user._id},
+            {id: user._id, role: user.role},
             process.env.JWT_SECRET,
             {expiresIn: "7d"}
         );
@@ -52,7 +52,14 @@ exports.login = async(req,res) => {
             {expiresIn: "7d"}
         );
 
-        res.status(200).json({message: "Login Successful! :)",token});
+        res.cookie("token", token, {
+            httpOnly: true,
+            sameSite: "lax",
+            secure: false,
+            maxAge: 7*24*60*60*1000
+        });
+
+        res.status(200).json({message: "Login Successful! :)",token,user});
     } catch (error) {
         console.log(`There is an error : ${error}`);
         res.status(500).json({message: error.message});

@@ -3,7 +3,7 @@ const Organization = require("../models/Organization.js");
 
 exports.createOrganization = async(req,res) => {
     try {
-        if(req.user.role != "admin") {
+        if(req.user.role !== "admin") {
             return res.status(400).json("Only Admin can access this!")
         }
 
