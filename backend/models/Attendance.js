@@ -4,7 +4,7 @@ const attendanceSchema = new mongoose.Schema({
     userId:{
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
-        requried: true
+        required: true
     },
     organizationId:{
         type: mongoose.Schema.Types.ObjectId,

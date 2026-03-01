@@ -9,7 +9,7 @@ const User = require("../models/User.js");
 
 const {protect} = require("../middleware/authMiddleware.js");
 
-router.post("/signup", signup);
+router.post("/register", signup);
 router.post("/login", login);
 
 router.get("/me", protect, async(req,res)=> {

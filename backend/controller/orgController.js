@@ -1,66 +1,167 @@
 const User = require("../models/User.js")
 const Organization = require("../models/Organization.js");
+const Membership = require("../models/Membership.js");
+const jwt = require("jsonwebtoken");
 
-exports.createOrganization = async(req,res) => {
+exports.createOrganization = async (req, res) => {
     try {
-        if(req.user.role !== "admin") {
-            return res.status(400).json("Only Admin can access this!")
-        }
-
-        const {name} = req.body;
+        const { name } = req.body;
+        const code = Math.random().toString(36).slice(2, 8).toUpperCase();
         const organization = await Organization.create({
             name,
+            code,
             createdBy: req.user._id
         });
 
-        req.user.organizationId = organization._id;
-        await req.user.save();
+        const membership = await Membership.create({
+            userId: req.user._id,
+            orgId: organization._id,
+            role: "admin"
+        })
 
-        res.status(200).json({message: "Organization Created!", organization});
+        const token = jwt.sign(
+            {
+                id: req.user._id,
+                orgId: organization._id,
+                role: membership.role
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: "7d" }
+        );
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            sameSite: "lax",
+            secure: false,
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
+
+        res.status(200).json({ message: "Organization Created!", organization, code, token });
     } catch (error) {
-        res.status(500).json({message: error.message});
+        res.status(500).json({ message: error.message });
     }
 };
 
-exports.joinOrganization = async(req,res) => {
+exports.joinOrganization = async (req, res) => {
     try {
-        const {organizationId} = req.body;
-        const organization = await Organization.findById(organizationId);
+        console.log("JOIN BODY:", req.body);
 
-        if(!organization) {
-            return res.status(400).json({message: "Organization Not Found!"});
+        if (!req.user) {
+            return res.status(401).json({ message: "Unauthorized" });
+        }
+        const { code } = req.body;
+
+        if (!code) {
+            return res.status(400).json({ message: "Organization code is required" });
+        }
+        const organization = await Organization.findOne({ code });
+
+
+        if (!organization) {
+            return res.status(400).json({ message: "Invalid Code!" });
         }
 
-        req.user.organizationId = organizationId;
-        req.user.role = "member";
-        await req.user.save();
+        const alreadyMember = await Membership.findOne({
+            userId: req.user._id,
+            orgId: organization._id
+        });
 
-        res.status(200).json({message: "Joining the Organization is Successful!"})
-        
+        if (alreadyMember) {
+            return res.status(400).json({
+                message: "You are already a member of this organization"
+            });
+        }
+
+        const membership = await Membership.create({
+            userId: req.user._id,
+            orgId: organization._id,
+            role: "member"
+        });
+
+        const token = jwt.sign(
+            {
+                id: req.user._id,
+                orgId: organization._id,
+                role: membership.role
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: "7d" }
+        );
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            sameSite: "lax",
+            secure: false,
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
+
+
+        res.status(200).json({ message: "Joining the Organization is Successful!",token })
     } catch (error) {
-        res.status(500).json({message: error.message});
+        console.log("JOIN ERROR FULL:", error);
+        if (error.code === 11000) {
+            return res.status(400).json({
+                message: "Already joined this organization"
+            });
+        }
+        res.status(500).json({ message: error.message });
     }
 };
 
-exports.addManagerORG = async(req,res) => {
-    try {  
-        if(req.user.role !== "admin") {
-            return res.status(400).json({message: "Only Admin have access!"});
-        }
-        const user = await User.findById(req.body.userId);
-        
-        if(!user) {
-            return res.status(400).json({message: "User Not Found!"});
-        }
-        if(user.organizationId.toString() !== req.user.organizationId.toString()) {
-            return res.status(400).json({message: "User not from same organization"});
-        }
+exports.myOrganizations = async (req, res) => {
+    const orgs = await Membership.find({ userId: req.user._id }).populate("orgId", "name code")
+    res.json({ message: "Orgs!" }, orgs)
+};
 
-        user.role = "manager";
-        await user.save();
+exports.enterOrganizations = async (req, res) => {
+    const { orgId } = req.body;
 
-        res.status(200).json({message: "Manager added successfully!"});
+    const membership = await Membership.findOne({
+        userId: req.user._id,
+        orgId
+    });
+
+    if (!membership)
+        return res.status(403).json("No access");
+
+    //Workspace token
+    const token = jwt.sign(
+        {
+            id: req.user._id,
+            orgId,
+            role: membership.role
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: "7d" }
+    );
+
+    res.json({ token });
+}
+
+exports.addManagerORG = async (req, res) => {
+
+    const { orgId, userId } = req.body;
+    try {
+        const adminMembership = await Membership.findOne({
+            userId: req.user._id,
+            orgId
+        });
+        if (!adminMembership || adminMembership.role !== "admin") {
+            return res.status(400).json({ message: "Only Admin have access!" });
+        }
+        const member = await Membership.findOne({
+            userId,
+            orgId
+        });
+
+        if (!member) {
+            return res.status(400).json({ message: "User Not Found!" });
+        }
+        member.role = "manager";
+        await member.save();
+
+        res.status(200).json({ message: "Manager added successfully!" });
     } catch (error) {
-        res.status(500).json({message: error.message});
+        res.status(500).json({ message: error.message });
     }
 }

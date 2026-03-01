@@ -7,14 +7,14 @@ exports.markAttendance = async (req, res) => {
         }
 
         const { userId, status } = req.body;
-        const organizationId = req.user.organizationId;
+        const organizationId = req.orgId
         const markedBy = req.user._id;
         const date = new Date().toISOString().split("T")[0];
 
         const attendance = await Attendance.create({
             userId,
             status,
-            organizationId,
+            organizationId: organizationId,
             markedBy,
             date
         });
@@ -31,10 +31,9 @@ exports.markAttendance = async (req, res) => {
 exports.getAttendanceByDate = async (req, res) => {
     try {
         const { date } = req.query;
-        const organizationId = req.user.organizationId;
 
         let filter = {
-            organizationId,
+            organizationId: req.orgId,
             date
         };
 
@@ -45,9 +44,9 @@ exports.getAttendanceByDate = async (req, res) => {
         }
 
         // This is assignedUsers for manager we will add this further in code
-        if (req.user.role === "manager") {
-            filter.userId = {$in: req.user.assignedUsers}
-        }
+        // if (req.user.role === "manager") {
+        //     filter.userId = {$in: req.user.assignedUsers}
+        // }
 
         const attendance = await Attendance.find(filter)
             .populate("userId", "name email role")
@@ -60,20 +59,19 @@ exports.getAttendanceByDate = async (req, res) => {
 };
 
 exports.getAttendanceByUser = async (req, res) => {
+      console.log("API RESPONSE:", req);
     try {
         const {userId} = req.params;
-        const organizationId = req.user.organizationId;
+        const organizationId = req.orgId;
+
+        console.log("PARAM USERID:", userId);
+    console.log("AUTH USER:", req.user._id);
+    console.log("ORG ID:", organizationId);
 
         if (req.user.role === "member" &&
             userId !== req.user._id.toString()
         ) {
-            return req.status(403).json({message: "You are not authorized"});
-        }
-
-        if (req.user.role === "manager" && 
-            !req.user.assignedUsers.includes(userId)
-        ) {
-            return res.status(403).json({message: "You don't have access to this user!"})
+            return res.status(403).json({message: "You are not authorized"});
         }
 
         const attendance = await Attendance.find({

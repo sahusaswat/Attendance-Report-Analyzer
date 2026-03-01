@@ -5,6 +5,10 @@ const organizationSchema = new mongoose.Schema({
         required: true,
         type: String
     },
+    code: {
+        type: String,
+        unique: true,
+    },
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
