@@ -14,6 +14,19 @@ instance.interceptors.response.use(
         }
         return Promise.reject(error)
     } 
-)
+);
+
+// Attach workspace token automatically 
+instance.interceptors.request.use((config) => {
+
+  const workspaceToken = localStorage.getItem("workspaceToken");
+
+  if (workspaceToken) {
+    config.headers.Authorization = `Bearer ${workspaceToken}`;
+  }
+
+  return config;
+});
+
 
 export default instance;

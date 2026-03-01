@@ -16,7 +16,7 @@ function JoinOrg () {
             await instance.post("/org/join", {code});
             const res = await instance.get("/auth/me");
             setuser(res.data.user);
-            navigate("/dahsboard");
+            navigate("/enter-org");
         } catch (error) {
             alert("Joining Failed Invalid Code")
         }

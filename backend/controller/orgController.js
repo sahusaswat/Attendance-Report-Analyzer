@@ -110,7 +110,7 @@ exports.joinOrganization = async (req, res) => {
 
 exports.myOrganizations = async (req, res) => {
     const orgs = await Membership.find({ userId: req.user._id }).populate("orgId", "name code")
-    res.json({ message: "Orgs!" }, orgs)
+    res.json({orgs})
 };
 
 exports.enterOrganizations = async (req, res) => {
