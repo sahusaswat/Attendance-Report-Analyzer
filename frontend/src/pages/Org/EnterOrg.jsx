@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import instance from "../../api/axiosApi.js";
+import { useAuth } from "../../context/AuthContext.jsx";
 import React from "react";
 
 const EnterOrg = () => {
-console.log("ENTER ORG PAGE LOADED");
+  console.log("ENTER ORG PAGE LOADED");
   const [orgs, setOrgs] = useState([]);
   const navigate = useNavigate();
+  const { setuser } = useAuth();
 
   // Fetch all organizations user belongs to
   useEffect(() => {
@@ -26,22 +28,16 @@ console.log("ENTER ORG PAGE LOADED");
   // When user selects an organization
   const handleEnterOrg = async (orgId) => {
     try {
-      const res = await instance.post("/org/enter-org", { orgId });
-
-      const workspaceToken = res.data.token;
-
-      // Save workspace token
-      localStorage.setItem("workspaceToken", workspaceToken);
-
-      // Decode role from token
-      const payload = JSON.parse(atob(workspaceToken.split(".")[1]));
-      const role = payload.role;
-
+      await instance.post("/org/enter-org", { orgId });
+      const res = await instance.get("/auth/me");
+      const role = res.data.role;
+      setuser({
+        ...res.data.user,
+        orgId: res.data.orgId,
+        role
+      });
       // Redirect based on role
-      if (role === "admin") navigate("/admin");
-      else if (role === "manager") navigate("/manager");
-      else navigate("/member");
-
+      await navigate("/dashboardredirect")
     } catch (err) {
       console.log("Error entering org", err);
     }

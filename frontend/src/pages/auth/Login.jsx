@@ -9,18 +9,22 @@ function Login() {
   const [password, setpassword] = useState("");
 
   const navigate = useNavigate();
-  const {setuser} = useAuth();
+  const { setuser } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-       await instance.post("/auth/login", {
+      await instance.post("/auth/login", {
         email,
         password
       });
       const res = await instance.get("/auth/me");
-      setuser(res.data.user)
-      navigate("/dashboardredirect", {replace: true});
+      setuser({
+        ...res.data.user,
+        orgId: res.data.orgId,
+        role: res.data.role
+      });
+      navigate("/dashboardredirect", { replace: true });
     } catch (error) {
       alert(error.response?.data?.message || "Login Failed!")
     }

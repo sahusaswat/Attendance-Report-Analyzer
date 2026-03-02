@@ -96,7 +96,7 @@ exports.joinOrganization = async (req, res) => {
         });
 
 
-        res.status(200).json({ message: "Joining the Organization is Successful!",token })
+        res.status(200).json({ token })
     } catch (error) {
         console.log("JOIN ERROR FULL:", error);
         if (error.code === 11000) {
@@ -121,6 +121,8 @@ exports.enterOrganizations = async (req, res) => {
         orgId
     });
 
+    console.log("MEMBERSHIP FOUND:", membership);
+
     if (!membership)
         return res.status(403).json("No access");
 
@@ -135,20 +137,31 @@ exports.enterOrganizations = async (req, res) => {
         { expiresIn: "7d" }
     );
 
-    res.json({ token });
+   res.cookie("token", token, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: false,
+    maxAge: 7 * 24 * 60 * 60 * 1000
+});
+
+res.json({ message: "Entered organization" });
 }
 
-exports.addManagerORG = async (req, res) => {
+exports.updateManagerRole = async (req, res) => {
 
     const { orgId, userId } = req.body;
+
     try {
+
         const adminMembership = await Membership.findOne({
             userId: req.user._id,
             orgId
         });
+
         if (!adminMembership || adminMembership.role !== "admin") {
-            return res.status(400).json({ message: "Only Admin have access!" });
+            return res.status(400).json({ message: "Only Admin has access!" });
         }
+
         const member = await Membership.findOne({
             userId,
             orgId
@@ -157,11 +170,21 @@ exports.addManagerORG = async (req, res) => {
         if (!member) {
             return res.status(400).json({ message: "User Not Found!" });
         }
-        member.role = "manager";
+
+        // Toggle Role
+        if (member.role === "member") {
+            member.role = "manager";
+        } else if (member.role === "manager") {
+            member.role = "member";
+        } else {
+            return res.status(400).json({ message: "Cannot modify admin role" });
+        }
+
         await member.save();
 
-        res.status(200).json({ message: "Manager added successfully!" });
+        res.status(200).json({ message: `Role updated to ${member.role}` });
+
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
-}
+};

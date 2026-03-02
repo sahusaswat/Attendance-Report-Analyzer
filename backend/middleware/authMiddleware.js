@@ -13,7 +13,7 @@ exports.protect = async (req, res, next) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = await User.findById(decoded.id);
 
-        req.orgId = decoded.organizationId || null;
+        req.orgId = decoded.orgId || null;
         req.role = decoded.role || null;
         console.log("DECODED:", decoded);
         console.log("USER FOUND:", req.user);

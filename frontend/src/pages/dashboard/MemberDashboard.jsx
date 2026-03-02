@@ -2,6 +2,7 @@ import React from 'react'
 import { useEffect, useState } from 'react';
 import { getAttendanceByUser } from '../../api/attendanceApi.js';
 import { useAuth } from '../../context/AuthContext.jsx';
+import LogoutButton from '../../components/LogoutButton.jsx';
 
 function MemberDashboard () {
   const {user} = useAuth();
@@ -34,6 +35,7 @@ function MemberDashboard () {
           </li>
         ))}
       </ul>
+      <LogoutButton/>
     </div>
   )
 }

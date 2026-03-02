@@ -16,7 +16,12 @@ const userSchema = new mongoose.Schema({
         required: true,
         type: String,
     },
-    
-}, {timestamps: true});
+
+    assignedUsers: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+    }],
+
+}, { timestamps: true });
 
 module.exports = mongoose.model("User", userSchema);

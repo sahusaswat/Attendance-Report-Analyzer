@@ -1,24 +1,32 @@
 const User = require("../models/User.js");
+const Membership = require("../models/Membership.js");
+const mongoose = require("mongoose");
 
-exports.addMembersToManager = async (req,res) => {
+exports.addMembersToManager = async (req, res) => {
     try {
-        if (req.user.role !== "admin") {
-            return res.status(403).json({message: "Only Admin Access!"});
+        if (req.role !== "admin") {
+            return res.status(403).json({ message: "Only Admin Access!" });
         };
 
-        const {managerId, members} = req.body;
-        const manager = await User.findById(managerId);
+        const { managerId, members } = req.body;
+        const managerMembership = await Membership.findOne({
+            userId: managerId,
+            orgId: req.orgId
+        });
 
-        if(!manager || manager.role !== "manager") {
-            return res.status(400).json({message: "Not a Manager!"}); 
-        };
+        if (!managerMembership || managerMembership.role !== "manager") {
+            return res.status(400).json({ message: "Not a Manager!" });
+        }
 
-        manager.assignedUsers = members;
-        await manager.save();
+        const managerUser = await User.findById(managerId);
 
-        res.status(200).json({message: "Members successfully assigned!"});
+        managerUser.assignedUsers = members.map(id =>
+            new mongoose.Types.ObjectId(id)
+        );
+        await managerUser.save();
+        res.status(200).json({ message: "Members successfully assigned!" });
 
     } catch (error) {
-        res.status(500).json({message: error.message});
+        res.status(500).json({ message: error.message });
     }
 };

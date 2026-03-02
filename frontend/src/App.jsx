@@ -12,6 +12,7 @@ import CreateOrg from "./pages/Org/CreateOrg.jsx";
 import EnterOrg from "./pages/Org/EnterOrg.jsx";
 import JoinOrg from "./pages/Org/JoinOrg.jsx";
 import NotAuthorized from "./pages/NotAuthorized.jsx"
+import PerformancePage from "./pages/PerformancePage.jsx"
 
 function App() {
   console.log("APP MOUNTED");
@@ -26,6 +27,7 @@ function App() {
         <Route path="/create" element={<CreateOrg />} />
         <Route path="/join" element={<JoinOrg />} />
         <Route path="/not-authorized" element={<NotAuthorized />} />
+        <Route path="/performance" element={<PerformancePage/>} />
 
 
         <Route

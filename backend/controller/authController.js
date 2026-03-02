@@ -73,3 +73,27 @@ exports.login = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+exports.getMe = async (req, res) => {
+    try {
+
+        const token = req.cookies.token;
+
+        if (!token) {
+            return res.json({ user: null, orgId: null, role: null });
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        const user = await User.findById(decoded.id).select("-password");
+
+        res.json({
+            user,
+            orgId: decoded.orgId || null,
+            role: decoded.role || null
+        });
+
+    } catch (error) {
+        res.json({ user: null, orgId: null, role: null });
+    }
+};
