@@ -1,4 +1,3 @@
-const User = require("../models/User.js")
 const Organization = require("../models/Organization.js");
 const Membership = require("../models/Membership.js");
 const jwt = require("jsonwebtoken");
@@ -36,7 +35,7 @@ exports.createOrganization = async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
 
-        res.status(200).json({ message: "Organization Created!", organization, code, token });
+        res.status(201).json({ message: "Organization Created!", organization, code, token });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -44,8 +43,6 @@ exports.createOrganization = async (req, res) => {
 
 exports.joinOrganization = async (req, res) => {
     try {
-        console.log("JOIN BODY:", req.body);
-
         if (!req.user) {
             return res.status(401).json({ message: "Unauthorized" });
         }
@@ -110,47 +107,48 @@ exports.joinOrganization = async (req, res) => {
 
 exports.myOrganizations = async (req, res) => {
     const orgs = await Membership.find({ userId: req.user._id }).populate("orgId", "name code")
-    res.json({orgs})
+    res.json({ orgs })
 };
 
 exports.enterOrganizations = async (req, res) => {
     const { orgId } = req.body;
+    try {
+        const membership = await Membership.findOne({
+            userId: req.user._id,
+            orgId
+        });
 
-    const membership = await Membership.findOne({
-        userId: req.user._id,
-        orgId
-    });
+        if (!membership)
+            return res.status(403).json("No access");
 
-    console.log("MEMBERSHIP FOUND:", membership);
+        //Workspace token
+        const token = jwt.sign(
+            {
+                id: req.user._id,
+                orgId,
+                role: membership.role
+            },
+            process.env.JWT_SECRET,
+            { expiresIn: "7d" }
+        );
 
-    if (!membership)
-        return res.status(403).json("No access");
+        res.cookie("token", token, {
+            httpOnly: true,
+            sameSite: "lax",
+            secure: false,
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
 
-    //Workspace token
-    const token = jwt.sign(
-        {
-            id: req.user._id,
-            orgId,
-            role: membership.role
-        },
-        process.env.JWT_SECRET,
-        { expiresIn: "7d" }
-    );
+        res.json({ message: "Entered organization" });
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
 
-   res.cookie("token", token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: false,
-    maxAge: 7 * 24 * 60 * 60 * 1000
-});
-
-res.json({ message: "Entered organization" });
 }
 
 exports.updateManagerRole = async (req, res) => {
 
     const { orgId, userId } = req.body;
-
     try {
 
         const adminMembership = await Membership.findOne({

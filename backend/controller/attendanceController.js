@@ -126,8 +126,6 @@ exports.getAttendanceByDate = async (req, res) => {
             date
         };
 
-        console.log("FILTER:", filter);
-
         if (req.role === "member") {
             filter.userId = req.user._id;
         }
@@ -148,18 +146,12 @@ exports.getAttendanceByDate = async (req, res) => {
 };
 
 exports.getAttendanceByUser = async (req, res) => {
-    console.log("API RESPONSE:", req);
     try {
         const { userId } = req.params;
         const organizationId = req.orgId;
 
-        console.log("PARAM USERID:", userId);
-        console.log("AUTH USER:", req.user._id);
-        console.log("ORG ID:", organizationId);
-
         if (req.role === "member" &&
-            userId !== req.user._id.toString()
-        ) {
+            userId !== req.user._id.toString()) {
             return res.status(403).json({ message: "You are not authorized" });
         }
 

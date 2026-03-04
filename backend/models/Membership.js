@@ -3,15 +3,18 @@ const mongoose = require("mongoose");
 const membershipSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User"
+        ref: "User",
+        required: true
     },
     orgId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Organization"
+        ref: "Organization",
+        required: true
     },
     role: {
         type: String,
-        enum: ["admin", "manager", "member"]
+        enum: ["admin", "manager", "member"],
+        required: true
     }
 });
 

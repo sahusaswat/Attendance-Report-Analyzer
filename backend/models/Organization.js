@@ -8,6 +8,7 @@ const organizationSchema = new mongoose.Schema({
     code: {
         type: String,
         unique: true,
+        required: true
     },
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
