@@ -7,7 +7,6 @@ import { useAuth } from '../../context/AuthContext.jsx';
 function Login() {
   const [email, setemail] = useState("");
   const [password, setpassword] = useState("");
-
   const navigate = useNavigate();
   const { setuser } = useAuth();
 
@@ -29,14 +28,12 @@ function Login() {
       alert(error.response?.data?.message || "Login Failed!")
     }
   };
-
   return (
     <>
       <div className="min-h-screen flex items-center justify-center">
         <form
           className="w-96 p-6 bg-white shadow-2xl rounded-lg"
-          onSubmit={handleSubmit}
-        >
+          onSubmit={handleSubmit}>
           <div className="w-full h-20 flex justify-center items-center">
             <h2 className="text-2xl font-semibold mb-4">Login</h2>
           </div>
@@ -49,7 +46,6 @@ function Login() {
             onChange={(e) => setemail(e.target.value)}
             required
           />
-
           <input
             type="password"
             name="password"
@@ -64,12 +60,11 @@ function Login() {
               Login
             </button>
           </div>
-
           <p className="text-blue-700 underline mt-4 "><Link to="/register">Create an account</Link></p>
         </form>
       </div>
     </>
   )
-}
+};
 
-export default Login
+export default Login;

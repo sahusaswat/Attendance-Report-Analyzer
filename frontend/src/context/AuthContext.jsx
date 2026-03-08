@@ -2,7 +2,6 @@ import { useState, createContext, useContext, useEffect } from "react";
 import instance from "../api/axiosApi.js";
 
 const AuthContext = createContext();
-console.log("AUTH PROVIDER RENDER");
 export const AuthProvider = ({ children }) => {
     const [user, setuser] = useState(undefined)
     const [ready, setready] = useState(false)

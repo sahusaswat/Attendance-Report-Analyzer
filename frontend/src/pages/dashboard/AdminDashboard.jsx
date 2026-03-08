@@ -10,7 +10,6 @@ function AdminDashboard() {
   const [members, setMembers] = useState([]);
   const [attendance, setAttendance] = useState({});
   const [attendanceDate, setAttendanceDate] = useState("");
-  console.log("USER:", user);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -40,6 +39,7 @@ function AdminDashboard() {
 
   const handleSubmit = async () => {
     try {
+      const today = new Date().toISOString().split("T")[0];
 
       const attendanceList = Object.keys(attendance).map(userId => ({
         userId,
@@ -50,6 +50,10 @@ function AdminDashboard() {
         attendanceList,
         date: attendanceDate
       });
+      if (attendanceDate > today) {
+        alert("Holdon Youngman! The day is yet to come :P");
+        return window.location.reload();;
+      }
 
       alert("Attendance Submitted!");
 
@@ -90,12 +94,6 @@ function AdminDashboard() {
     }
   };
 
-  const today = new Date().toISOString().split("T")[0];
-
-  if (attendanceDate > today) {
-    alert("Holdon Youngman! The day is yet to come :P");
-    return window.location.reload();;
-  }
   return (
     <div>
       <h2>Mark Attendance</h2>
@@ -129,8 +127,7 @@ function AdminDashboard() {
           {m.role === "manager" && (
             <button
               onClick={() => assignMembers(m.userId._id)}
-              className="bg-green-200 px-2 rounded"
-            >
+              className="bg-green-200 px-2 rounded">
               Assign Members
             </button>
           )}
@@ -150,4 +147,4 @@ function AdminDashboard() {
   )
 }
 
-export default AdminDashboard
+export default AdminDashboard;

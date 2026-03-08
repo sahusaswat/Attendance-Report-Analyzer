@@ -4,12 +4,10 @@ import { useAuth } from '../context/AuthContext';
 
 const LogoutButton = () => {
     const navigate = useNavigate();
-    const {setuser} = useAuth();
+    const {logout} = useAuth();
 
-    const handlelogout = () => {
-        setuser(null)
-        localStorage.removeItem("token");
-        localStorage.removeItem("orgId");
+    const handlelogout = async () => {
+        await logout();
         navigate("/login")
     }
   return (

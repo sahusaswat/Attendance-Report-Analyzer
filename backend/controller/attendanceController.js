@@ -2,41 +2,6 @@ const Attendance = require("../models/Attendance.js")
 const Membership = require("../models/Membership.js")
 const User = require("../models/User.js")
 
-exports.markAttendance = async (req, res) => {
-    try {
-        if (req.role === "member") {
-            return res.status(403).json({ message: "Members cannot mark attendance!" })
-        }
-
-        const { userId, status, date } = req.body;
-        const organizationId = req.orgId
-        const markedBy = req.user._id;
-        const today = new Date().toISOString().split("T")[0];
-
-        if (!date) {
-            return res.status(400).json({ message: "Date is required" });
-        }
-        if (date > today) {
-            return res.status(400).json({ message: "Hold on youngman! The day is yet to come :P" });
-        }
-
-        const attendance = await Attendance.create({
-            userId,
-            status,
-            organizationId: organizationId,
-            markedBy,
-            date
-        });
-
-        res.status(201).json({ message: "Attendance successfully marked!", attendance })
-    } catch (error) {
-        if (error.code === 11000) {
-            return res.status(400).json({ message: "Attendance already marked today!" });
-        }
-        res.status(500).json({ message: error.message });
-    }
-};
-
 exports.getOrganizationMembers = async (req, res) => {
     try {
 
@@ -129,11 +94,6 @@ exports.getAttendanceByDate = async (req, res) => {
         if (req.role === "member") {
             filter.userId = req.user._id;
         }
-
-        // This is assignedUsers for manager we will add this further in code
-        // if (req.user.role === "manager") {
-        //     filter.userId = {$in: req.user.assignedUsers}
-        // }
 
         const attendance = await Attendance.find(filter)
             .populate("userId", "name email role")
