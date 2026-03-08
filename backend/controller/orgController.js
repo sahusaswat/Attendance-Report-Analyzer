@@ -126,7 +126,7 @@ exports.enterOrganizations = async (req, res) => {
             {
                 id: req.user._id,
                 orgId,
-                role: membership.role
+                role: membership.role,
             },
             process.env.JWT_SECRET,
             { expiresIn: "7d" }

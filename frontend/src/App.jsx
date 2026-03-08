@@ -1,18 +1,20 @@
 import React from "react";
 import Login from "./pages/auth/Login.jsx";
 import Register from "./pages/auth/Register.jsx";
-import AdminDashboard from "./pages/dashboard/AdminDashboard.jsx";
-import MemberDashboard from "./pages/dashboard/MemberDashboard.jsx";
+import AdminDashboard from "./pages/admin/AdminDashboard.jsx";
+import MemberDashboard from "./pages/member/MemberDashboard.jsx";
 import ProtectedRoutes from "./components/ProtectedRoutes.jsx";
 import DashboardRedirect from "./pages/DashboardRedirect.jsx";
-import ManagerDashboard from "./pages/dashboard/ManagerDashboard.jsx";
+import ManagerDashboard from "./pages/manager/ManagerDashboard.jsx";
 import { Routes, Route } from "react-router-dom";
 import SaaSDashboard from "./pages/dashboard/SaaSDashboard.jsx";
 import CreateOrg from "./pages/Org/CreateOrg.jsx";
 import EnterOrg from "./pages/Org/EnterOrg.jsx";
 import JoinOrg from "./pages/Org/JoinOrg.jsx";
 import NotAuthorized from "./pages/NotAuthorized.jsx"
-import PerformancePage from "./pages/PerformancePage.jsx"
+import PerformancePage from "./pages/admin/PerformancePage.jsx";
+import AdminAttendance from "./pages/admin/AdminAttendance.jsx";
+import AdminAssignments from "./pages/admin/AdminAssignments.jsx";
 
 function App() {
   console.log("APP MOUNTED");
@@ -28,6 +30,8 @@ function App() {
         <Route path="/join" element={<JoinOrg />} />
         <Route path="/not-authorized" element={<NotAuthorized />} />
         <Route path="/performance" element={<PerformancePage/>} />
+        <Route path="/attendance" element={<AdminAttendance/>} />
+        <Route path="/assignments" element={<AdminAssignments />} />
 
 
         <Route

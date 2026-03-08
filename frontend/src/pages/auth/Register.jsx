@@ -1,82 +1,112 @@
-import React from 'react'
-import {Link, useNavigate } from 'react-router-dom'
-import { useState } from 'react';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import instance from "../../api/axiosApi.js";
-import {useAuth} from "../../context/AuthContext.jsx"
+import { useAuth } from "../../context/AuthContext.jsx";
 
-function Signup () {
-    const [email, setemail] = useState("");
-    const [password, setpassword] = useState("");
-    const [name, setname] = useState("");
-    const {setuser} = useAuth();
-    const navigate = useNavigate();
+function Signup() {
+  const [email, setemail] = useState("");
+  const [password, setpassword] = useState("");
+  const [name, setname] = useState("");
+  const { setuser } = useAuth();
+  const navigate = useNavigate();
 
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      try{
-         await instance.post("/auth/register", {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      await instance.post("/auth/register", {
         name,
         email,
         password
       });
+
       const res = await instance.get("/auth/me");
-      setuser(res.data.user)
+
+      setuser(res.data.user);
+
       navigate("/dashboardredirect");
-      } catch (error) {
-        alert(error.response?.data?.message || "Signup Failed!")
-      }
-    };
+
+    } catch (error) {
+      alert(error.response?.data?.message || "Signup Failed!");
+    }
+  };
 
   return (
-    <>
-      <div className="min-h-screen flex items-center justify-center">
-      <form
-        className="w-96 p-6 bg-white shadow-2xl rounded-lg"
-        onSubmit={handleSubmit}
-      >
-        <div className="w-full h-20 flex justify-center items-center">
-        <h2 className="text-2xl font-semibold mb-4">Sign up</h2>
-        </div>
-        <input
-          type="text"
-          name="username"
-          placeholder="username"
-          className="w-full mb-3 p-2 border rounded-lg"
-          value={name}
-          onChange={(e)=> setname(e.target.value)}
-          required
-        />
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center px-4">
 
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          className="w-full mb-3 p-2 border rounded-lg"
-          value={email}
-          onChange={(e)=> setemail(e.target.value)}
-          required
-        />
+      {/* Page Heading */}
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-bold text-gray-800">
+          Create Your Account
+        </h1>
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          className="w-full mb-4 p-2 border rounded-lg"
-          value={password}
-          onChange={(e)=> setpassword(e.target.value)}
-          required
-        />
-      <div className="w-full h-20 flex justify-center items-center">
-        <button className="w-36 rounded-md bg-blue-400 text-gray-600 py-2">
-          Sign up
-        </button>
-        </div>
+        <p className="text-gray-600 mt-2">
+          Start managing your organization in minutes.
+        </p>
+      </div>
 
-        <p className="text-blue-700 underline mt-4 "><Link to="/login">Already Have an account?</Link></p>
-      </form>
+      {/* Card */}
+      <div className="bg-white shadow-xl rounded-xl p-8 w-full max-w-md">
+
+        <h2 className="text-2xl font-semibold text-center mb-6">
+          Sign Up
+        </h2>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+
+          <input
+            type="text"
+            placeholder="Full Name"
+            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={name}
+            onChange={(e) => setname(e.target.value)}
+            required
+          />
+
+          <input
+            type="email"
+            placeholder="Email Address"
+            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={email}
+            onChange={(e) => setemail(e.target.value)}
+            required
+          />
+
+          <input
+            type="password"
+            placeholder="Password"
+            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={password}
+            onChange={(e) => setpassword(e.target.value)}
+            required
+          />
+
+          <button
+            type="submit"
+            className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
+          >
+            Create Account
+          </button>
+
+        </form>
+
+        {/* Divider */}
+        <div className="my-6 border-t"></div>
+
+        {/* Login Link */}
+        <p className="text-center text-gray-600">
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            className="text-blue-600 font-medium hover:underline"
+          >
+            Login
+          </Link>
+        </p>
+
+      </div>
     </div>
-    </>
-  )
+  );
 }
 
-export default Signup
+export default Signup;

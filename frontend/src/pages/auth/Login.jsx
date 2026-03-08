@@ -1,8 +1,7 @@
-import React from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { useState } from 'react';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import instance from "../../api/axiosApi.js";
-import { useAuth } from '../../context/AuthContext.jsx';
+import { useAuth } from "../../context/AuthContext.jsx";
 
 function Login() {
   const [email, setemail] = useState("");
@@ -12,59 +11,95 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
       await instance.post("/auth/login", {
         email,
         password
       });
+
       const res = await instance.get("/auth/me");
+
       setuser({
         ...res.data.user,
         orgId: res.data.orgId,
         role: res.data.role
       });
+
       navigate("/dashboardredirect", { replace: true });
+
     } catch (error) {
-      alert(error.response?.data?.message || "Login Failed!")
+      alert(error.response?.data?.message || "Login Failed!");
     }
   };
+
   return (
-    <>
-      <div className="min-h-screen flex items-center justify-center">
-        <form
-          className="w-96 p-6 bg-white shadow-2xl rounded-lg"
-          onSubmit={handleSubmit}>
-          <div className="w-full h-20 flex justify-center items-center">
-            <h2 className="text-2xl font-semibold mb-4">Login</h2>
-          </div>
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center px-4">
+
+      {/* Heading */}
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-bold text-gray-800">
+          Welcome Back
+        </h1>
+
+        <p className="text-gray-600 mt-2">
+          Login to continue managing your organization.
+        </p>
+      </div>
+
+      {/* Card */}
+      <div className="bg-white shadow-xl rounded-xl p-8 w-full max-w-md">
+
+        <h2 className="text-2xl font-semibold text-center mb-6">
+          Login
+        </h2>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+
           <input
             type="email"
-            name="email"
-            placeholder="Email"
-            className="w-full mb-3 p-2 border rounded-lg"
+            placeholder="Email Address"
+            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={email}
             onChange={(e) => setemail(e.target.value)}
             required
           />
+
           <input
             type="password"
-            name="password"
             placeholder="Password"
-            className="w-full mb-4 p-2 border rounded-lg"
+            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={password}
             onChange={(e) => setpassword(e.target.value)}
             required
           />
-          <div className="w-full h-20 flex justify-center items-center">
-            <button className="w-36 rounded-md bg-blue-200 text-gray-600 py-2">
-              Login
-            </button>
-          </div>
-          <p className="text-blue-700 underline mt-4 "><Link to="/register">Create an account</Link></p>
+
+          <button
+            type="submit"
+            className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
+          >
+            Login
+          </button>
+
         </form>
+
+        {/* Divider */}
+        <div className="my-6 border-t"></div>
+
+        {/* Register Link */}
+        <p className="text-center text-gray-600">
+          Don't have an account?{" "}
+          <Link
+            to="/register"
+            className="text-blue-600 font-medium hover:underline"
+          >
+            Create one
+          </Link>
+        </p>
+
       </div>
-    </>
-  )
-};
+    </div>
+  );
+}
 
 export default Login;

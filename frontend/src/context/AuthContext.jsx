@@ -14,7 +14,9 @@ export const AuthProvider = ({ children }) => {
                     ? {
                         ...res.data.user,
                         orgId: res.data.orgId,
-                        role: res.data.role
+                        role: res.data.role,
+                        orgName: res.data.organization?.name,
+                        orgCode: res.data.organization?.code
                     }
                     : null);
             } catch (error) {

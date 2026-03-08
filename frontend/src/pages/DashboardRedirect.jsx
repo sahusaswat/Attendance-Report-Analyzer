@@ -6,7 +6,7 @@ import Loader from "../components/Loader.jsx"
 const DashboardRedirect = () => {
     const {user, ready} = useAuth();
     if(!ready) return <Loader/>;
-    if(!user) return <Navigate to="/login" />;
+    if(!user) return <Navigate to="/not-authorized" />;
     if(!user.orgId) return <Navigate to="/dashboard" />
     switch (user.role) {
         case "admin":

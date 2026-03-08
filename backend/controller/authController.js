@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const User = require("../models/User.js");
+const Organization = require("../models/Organization.js");
 
 exports.signup = async (req, res) => {
     try {
@@ -83,13 +84,18 @@ exports.getMe = async (req, res) => {
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        console.log(decoded);
 
         const user = await User.findById(decoded.id).select("-password");
+        const organization = await Organization.findById(decoded.orgId);
+        console.log(user);
+        console.log(organization);
 
         res.json({
             user,
             orgId: decoded.orgId || null,
-            role: decoded.role || null
+            role: decoded.role || null,
+            organization
         });
 
     } catch (error) {

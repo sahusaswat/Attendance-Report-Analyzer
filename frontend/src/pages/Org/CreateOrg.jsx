@@ -1,8 +1,7 @@
-import React from 'react'
-import { useState } from 'react'
-import { useAuth } from '../../context/AuthContext'
-import instance from '../../api/axiosApi'
-import { Link, useNavigate } from 'react-router-dom'
+import React, { useState } from "react";
+import { useAuth } from "../../context/AuthContext";
+import instance from "../../api/axiosApi";
+import { Link, useNavigate } from "react-router-dom";
 
 function CreateOrg() {
   const [name, setname] = useState("");
@@ -16,40 +15,74 @@ function CreateOrg() {
       await instance.post("/org/create", { name });
 
       const res = await instance.get("/auth/me");
+
       setuser({
         ...res.data.user,
         orgId: res.data.orgId,
-        role: res.data.role
+        role: res.data.role,
       });
-      navigate("/dashboard")
+
+      navigate("/dashboard");
     } catch (error) {
-      alert(error.response?.data.message || 'Organization Creation Failed!')
+      alert(error.response?.data.message || "Organization Creation Failed!");
     }
-  }
+  };
+
   return (
-    <>
-      <h1>Create Your Organization</h1>
-      <p>Manage attendance single handlely. Keep eye on everything.</p>
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center px-4">
 
-      <form className="w-96 p-6 bg-white shadow-2xl rounded-lg"
-        onSubmit={handleCreate}>
-        <div className="w-full h-20 flex justify-center items-center">
-          <h2 className="text-2xl font-semibold mb-4">Create Organization</h2>
-        </div>
-        <input type="text"
-          required
-          placeholder='Organization Name'
-          value={name}
-          onChange={(e) => setname(e.target.value)}
-          className="w-full mb-4 p-2 border rounded-lg"
-        />
+      {/* Heading */}
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-bold text-gray-800">
+          Create Your Organization
+        </h1>
 
-        <button className="text-purple-300 underline mt-4">Create</button>
+        <p className="text-gray-600 mt-2">
+          Manage attendance easily and monitor everything in one place.
+        </p>
+      </div>
 
-      </form>
-      <button className="text-purple-600 underline mt-4 h-10 w-40 bg-blue-200 rounded-md shadow-2xs cursor-pointer"><Link to="/dashboardredirect">Dashboard</Link></button>
-    </>
-  )
+      {/* Card */}
+      <div className="bg-white shadow-xl rounded-xl p-8 w-full max-w-md">
+
+        <h2 className="text-2xl font-semibold text-center mb-6">
+          Organization Setup
+        </h2>
+
+        <form onSubmit={handleCreate} className="space-y-4">
+
+          <input
+            type="text"
+            required
+            placeholder="Organization Name"
+            value={name}
+            onChange={(e) => setname(e.target.value)}
+            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+          />
+
+          <button
+            type="submit"
+            className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition"
+          >
+            Create Organization
+          </button>
+
+        </form>
+
+        {/* Divider */}
+        <div className="my-6 border-t"></div>
+
+        {/* Dashboard Redirect */}
+        <Link
+          to="/dashboardredirect"
+          className="block text-center text-purple-600 font-medium hover:underline"
+        >
+          Go to Dashboard
+        </Link>
+
+      </div>
+    </div>
+  );
 }
 
-export default CreateOrg
+export default CreateOrg;

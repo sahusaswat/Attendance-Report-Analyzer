@@ -1,23 +1,24 @@
-import React from 'react'
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const LogoutButton = () => {
-    const navigate = useNavigate();
-    const {logout} = useAuth();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
 
-    const handlelogout = async () => {
-        await logout();
-        navigate("/login")
-    }
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
+
   return (
-    <div>
-      <button className="text-purple-600 underline mt-4 h-10 w-40 bg-blue-200 rounded-md shadow-2xs cursor-pointer"
-        onClick={handlelogout}>
-        Logout
-        </button>
-    </div>
-  )
-}
+    <button
+      onClick={handleLogout}
+      className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 hover:shadow-md transition-all duration-200 cursor-pointer"
+    >
+      Logout
+    </button>
+  );
+};
 
-export default LogoutButton
+export default LogoutButton;
