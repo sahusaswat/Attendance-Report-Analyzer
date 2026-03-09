@@ -2,10 +2,15 @@ import React from "react";
 import LogoutButton from "../../components/LogoutButton.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 import Navbar from "../../components/Navbar.jsx";
+import Loader from "../../components/Loader.jsx"
 
 function AdminDashboard() {
 
-  const { user } = useAuth();
+  const { user, ready } = useAuth();
+
+  if (!ready) {
+  return <Loader/>;
+}
 
   return (
     <>

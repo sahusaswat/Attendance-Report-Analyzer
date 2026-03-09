@@ -1,30 +1,26 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import instance from "../../api/axiosApi.js";
-import { useAuth } from "../../context/AuthContext.jsx";
 
 function Signup() {
   const [email, setemail] = useState("");
   const [password, setpassword] = useState("");
   const [name, setname] = useState("");
-  const { setuser } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      await instance.post("/auth/register", {
+      const res = await instance.post("/auth/register", {
         name,
         email,
         password
-      });
+      }); 
 
-      const res = await instance.get("/auth/me");
+      alert(res.data.message);
 
-      setuser(res.data.user);
-
-      navigate("/dashboardredirect");
+      navigate("/verify-code", {state:{email}});
 
     } catch (error) {
       alert(error.response?.data?.message || "Signup Failed!");

@@ -15,6 +15,8 @@ import NotAuthorized from "./pages/NotAuthorized.jsx"
 import PerformancePage from "./pages/admin/PerformancePage.jsx";
 import AdminAttendance from "./pages/admin/AdminAttendance.jsx";
 import AdminAssignments from "./pages/admin/AdminAssignments.jsx";
+import VerifyCode from "./pages/auth/VerifyCode.jsx";
+import Verified from "./pages/auth/Verified.jsx";
 
 function App() {
   console.log("APP MOUNTED");
@@ -32,6 +34,8 @@ function App() {
         <Route path="/performance" element={<PerformancePage/>} />
         <Route path="/attendance" element={<AdminAttendance/>} />
         <Route path="/assignments" element={<AdminAssignments />} />
+        <Route path="/verify-code" element={<VerifyCode/>}/>
+        <Route path="/verified" element={<Verified/>}/>
 
 
         <Route

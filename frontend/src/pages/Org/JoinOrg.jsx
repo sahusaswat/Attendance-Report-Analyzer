@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import instance from "../../api/axiosApi";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 function JoinOrg() {
   const [code, setcode] = useState("");
@@ -67,6 +67,12 @@ function JoinOrg() {
           >
             Join Organization
           </button>
+          <Link
+          to="/dashboardredirect"
+          className="block text-center text-purple-600 font-medium hover:underline"
+        >
+          Go to Dashboard
+        </Link>
 
         </form>
 

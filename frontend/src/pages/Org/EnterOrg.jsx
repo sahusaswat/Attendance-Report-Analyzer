@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import instance from "../../api/axiosApi.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import React from "react";
@@ -97,6 +97,12 @@ const EnterOrg = () => {
           </div>
 
         )}
+        <Link
+          to="/dashboardredirect"
+          className="block text-center text-purple-600 font-medium hover:underline"
+        >
+          Go to Dashboard
+        </Link>
 
       </div>
 
