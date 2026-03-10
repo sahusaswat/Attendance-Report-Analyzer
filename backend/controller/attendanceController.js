@@ -10,7 +10,9 @@ exports.getOrganizationMembers = async (req, res) => {
         // ADMIN → gets all
         if (req.role === "admin") {
 
-            const members = await Membership.find({ orgId })
+            const members = await Membership.find({
+                 orgId,
+                role: {$in: ["manager", "member"]}})
                 .populate("userId", "name email")
                 .select("userId role");
 
@@ -28,8 +30,10 @@ exports.getOrganizationMembers = async (req, res) => {
                 return res.status(200).json({ members: [] });
             }
 
+            const usertoFetch = [req.user.id, ...assigned]
+
             const members = await Membership.find({
-                userId: { $in: assigned },
+                userId: { $in: usertoFetch },
                 orgId
             })
                 .populate("userId", "name email")

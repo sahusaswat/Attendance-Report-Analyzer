@@ -6,7 +6,7 @@ function Navbar() {
   const location = useLocation();
 
   const navItem = (path, label) => {
-    const active = location.pathname === path;
+    const active = location.pathname.startsWith(path);
 
     return (
       <button
@@ -33,9 +33,9 @@ function Navbar() {
       </div>
 
       {/* Navigation */}
-      <div className="flex flex-col gap-2 p-4">
+      <div className='flex flex-col gap-2 p-4'>
 
-        {navItem("/dashboardredirect", "Dashboard")}
+        {navItem("/admin", "Dashboard")}
 
         {navItem("/attendance", "Attendance")}
 

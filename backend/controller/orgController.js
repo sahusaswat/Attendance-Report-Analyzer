@@ -148,12 +148,12 @@ exports.enterOrganizations = async (req, res) => {
 
 exports.updateManagerRole = async (req, res) => {
 
-    const { orgId, userId } = req.body;
+    const { userId } = req.body;
     try {
 
         const adminMembership = await Membership.findOne({
             userId: req.user._id,
-            orgId
+            orgId: req.orgId
         });
 
         if (!adminMembership || adminMembership.role !== "admin") {
@@ -162,11 +162,15 @@ exports.updateManagerRole = async (req, res) => {
 
         const member = await Membership.findOne({
             userId,
-            orgId
+            orgId: req.orgId
         });
 
         if (!member) {
             return res.status(400).json({ message: "User Not Found!" });
+        }
+
+        if(member.role === "admin") {
+            return res.status(400).json({message: "Cannot modify admin!"})
         }
 
         // Toggle Role
@@ -179,6 +183,7 @@ exports.updateManagerRole = async (req, res) => {
         }
 
         await member.save();
+        
 
         res.status(200).json({ message: `Role updated to ${member.role}` });
 

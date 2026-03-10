@@ -88,9 +88,8 @@ function ManagerDashboard() {
 
   return (
     <>
-      <Navbar />
 
-      <div className="ml-64 p-10 min-h-screen bg-gray-100">
+      <div className=" p-10 min-h-screen bg-gray-100">
 
         {/* Organization Header */}
 
@@ -101,10 +100,6 @@ function ManagerDashboard() {
             <h1 className="text-3xl font-bold">
               {user?.orgName}
             </h1>
-
-            <p className="text-lg mt-2">
-              Code : <span className="font-semibold">{user?.orgCode}</span>
-            </p>
 
           </div>
 

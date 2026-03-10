@@ -12,19 +12,18 @@ function AdminAssignments() {
     const [selectedManager, setSelectedManager] = useState("");
     const [selectedMembers, setSelectedMembers] = useState([]);
 
-   useEffect(() => {
-    if(selectedManager){
-        fetchAssignmentsForManager();
-    }
-}, [selectedManager]);
+    useEffect(() => {
+        fetchData();
+    }, []);
+
 
     const fetchData = async () => {
 
         const res = await instance.get("/attendance/assignments");
-        const resss = await instance.get("/org/add-manager")
+        const res2 = await instance.get("/attendance/members")
 
         setManagers(res.data.managers);
-        setMembers(resss.data.members);
+        setMembers(res2.data.members);
         setUnassignedMembers(res.data.unassignedMembers);
         setAssignedMembers(res.data.assignedMembers);
 
@@ -106,7 +105,7 @@ function AdminAssignments() {
 
     return (
         <>
-            {/* <Navbar /> */}
+            <Navbar />
             <div className="bg-white shadow rounded p-6 mb-10 ml-60">
 
                 <h2 className="text-xl font-semibold mb-4">
