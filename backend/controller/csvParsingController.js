@@ -10,6 +10,19 @@ exports.uploadAttendance = async (req, res) => {
         const convertBufferStream = new stream.PassThrough();
         convertBufferStream.end(req.file.buffer);
 
+        function calculateStatus(inTime, outTime) {
+            const [inH, inM] = inTime.split(":").map(Number);
+            const [outH, outM] = outTime.split(":").map(Number);
+
+            const inMinutes = inH * 60 + inM;
+            const outMinutes = outH * 60 + outM;
+            if (outMinutes <= inMinutes) return "absent";
+            const hoursWorked = (outMinutes - inMinutes) / 60;
+            if (hoursWorked >= 8) return "present";
+            if (hoursWorked >= 4) return "half-day";
+            return "absent";
+        }
+
         convertBufferStream
             .pipe(csv())
             .on("data", (data) => {
@@ -21,20 +34,23 @@ exports.uploadAttendance = async (req, res) => {
 
                 for (const row of results) {
                     const user = await User.findOne({ email: row.email })
-                    if(!user) {
+                    if (!user) {
                         skipped.push(row.email);
                         continue
                     }
-
+                    const status = calculateStatus(row.inTime, row.outTime)
                     await Attendance.create({
                         userId: user._id,
-                        date: row.date,
+                        organizationId: req.orgId,
+                        date: new Date(row.date),
+                        status,
+                        markedBy: req.user.id,
                         inTime: row.inTime,
                         outTime: row.outTime
                     });
                     success++;
                 }
-                res.status(201).json({message: "Attendance Processed!", success, skipped})
+                res.status(201).json({ message: "Attendance Processed!", success, skipped })
             })
     } catch (error) {
         res.status(500).json({ message: error.message });

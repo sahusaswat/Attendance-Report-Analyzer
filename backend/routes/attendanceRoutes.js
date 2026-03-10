@@ -5,7 +5,7 @@ const { getAttendanceByDate, getAttendanceByUser, getOrganizationMembers, markAt
 const {addMembersToManager, getAssignments} = require("../controller/addMembersToManagerController.js");
 const {uploadAttendance} = require("../controller/csvParsingController.js")
 const {protect} = require("../middleware/authMiddleware.js");
-const {upload} = require("../middleware/upload.js")
+const upload = require("../middleware/upload.js")
 
 
 
@@ -16,7 +16,7 @@ router.get("/members", protect, getOrganizationMembers);
 router.get("/performance", protect, getPerformance)
 router.post("/mark-bulk", protect, markAttendanceBulk);
 router.post("/assign", protect, addMembersToManager);
-router.post("/upload", upload.single("file"), uploadAttendance);
+router.post("/upload", protect, upload.single("file"), uploadAttendance);
 
 module.exports = router;
 

@@ -10,6 +10,8 @@ function AdminAttendance() {
     const [members, setMembers] = useState([]);
     const [attendance, setAttendance] = useState({});
     const [attendanceDate, setAttendanceDate] = useState("");
+    const [file, setFile] = useState(null)
+    const [result, setResult] = useState(null)
 
     useEffect(() => {
 
@@ -70,6 +72,29 @@ function AdminAttendance() {
 
     };
 
+    const uploadCSV = async () => {
+        if (!file) {
+            alert("Please choose a file!")
+            return
+        };
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+            const res = await instance.post("/attendance/upload", formData,
+                {
+                    headers: { "Content-Type": "multipart/form-data" }
+                }
+            )
+            setResult(res.data)
+            alert("CSV uploaded successfully!")
+
+        } catch (error) {
+            alert("Upload Failed")
+        }
+    }
+
     return (
         <>
             <Navbar />
@@ -92,6 +117,39 @@ function AdminAttendance() {
                     />
 
                 </div>
+
+                <div className="bg-white p-4 rounded-lg shadow-md w-[450px]">
+
+                    <h2 className="text-lg font-semibold mb-3">
+                        Upload Attendance CSV
+                    </h2>
+
+                    <input
+                        type="file"
+                        accept=".csv"
+                        onChange={(e) => setFile(e.target.files[0])}
+                        className="mb-3 cursor-pointer"
+                    />
+
+                    <button
+                        onClick={uploadCSV}
+                        className="bg-blue-500 text-white px-4 py-2 rounded cursor-pointer"
+                    >
+                        Upload
+                    </button>
+
+                </div>
+
+                {result && (
+
+                    <div className="mt-4">
+
+                        <p>Processed: {result.success}</p>
+                        <p>Skipped: {result.skipped.length}</p>
+
+                    </div>
+
+                )}
 
                 {/* Attendance Table */}
 

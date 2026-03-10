@@ -19,6 +19,7 @@ app.use(cookieParser())
 app.use("/api/auth", require("./routes/authRoutes.js"))
 app.use("/api/org", require("./routes/organizationRoutes.js"));
 app.use("/api/attendance", require("./routes/attendanceRoutes.js"));
+app.use("/api/admin", require("./routes/adminStatsRoutes.js"))
 
 app.get('/', (req,res)=> {
     res.send("Backend Running 🚀 !!")

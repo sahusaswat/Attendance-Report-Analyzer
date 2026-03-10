@@ -1,16 +1,29 @@
-import React from "react";
+import React, { useEffect } from "react";
 import LogoutButton from "../../components/LogoutButton.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 import Navbar from "../../components/Navbar.jsx";
 import Loader from "../../components/Loader.jsx"
+import { useState } from "react";
+import instance from "../../api/axiosApi.js";
 
 function AdminDashboard() {
 
   const { user, ready } = useAuth();
+  const [stats, setStats] = useState(null);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+
+      const res = await instance.get("/admin/dashboard-stats");
+      console.log("API response:", res.data);
+      setStats(res.data);
+    }
+    fetchStats();
+  }, [])
 
   if (!ready) {
-  return <Loader/>;
-}
+    return <Loader />;
+  }
 
   return (
     <>
@@ -60,7 +73,7 @@ function AdminDashboard() {
             </h2>
 
             <p className="text-3xl font-bold text-green-600">
-              #Total Present
+              {stats?.totalPresent} out of {stats?.totalWorkers}
             </p>
           </div>
 
@@ -80,7 +93,7 @@ function AdminDashboard() {
             </h2>
 
             <p className="text-3xl font-bold text-red-500">
-              #Leave Count
+              {stats?.leaveCount}
             </p>
           </div>
 
@@ -100,14 +113,11 @@ function AdminDashboard() {
 
             <ul className="space-y-2">
 
-              <li className="bg-green-100 p-2 rounded">
-                Employee Name
-              </li>
-
-              <li className="bg-green-100 p-2 rounded">
-                Employee Name
-              </li>
-
+              {stats?.topPerformers?.map((emp) => (
+                <li key={emp._id} className="bg-green-100 p-2 rounded">
+                  {emp.userId?.name}
+                </li>
+              ))}
             </ul>
 
           </div>
@@ -121,14 +131,11 @@ function AdminDashboard() {
             </h2>
 
             <ul className="space-y-2">
-
-              <li className="bg-red-100 p-2 rounded">
-                Employee Name
-              </li>
-
-              <li className="bg-red-100 p-2 rounded">
-                Employee Name
-              </li>
+              {stats?.lowPerformers?.map((emp) => (
+                <li key={emp._id} className="bg-red-100 p-2 rounded">
+                  {emp.userId?.name}
+                </li>
+              ))}
 
             </ul>
 
