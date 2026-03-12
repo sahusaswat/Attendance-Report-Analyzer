@@ -7,14 +7,18 @@ const {
     login,
     verifyEmail,
     getMe,
-    resendcode
+    resendcode,
+    forgotpassword,
+    resetpassword
 } = require("../controller/authController.js");
 
 
 router.post("/register", signup);
 router.post("/login", login);
 router.post("/verify-email", verifyEmail);
-router.post("/resend-code", resendcode)
+router.post("/resend-code", resendcode);
+router.post("/forgotpassword", forgotpassword)
+router.post("resetpassword/:token", resetpassword)
 
 router.post("/logout", (req,res)=> {
     res.clearCookie("token");

@@ -119,16 +119,28 @@ exports.getAttendanceByDate = async (req, res) => {
 exports.getAttendanceByUser = async (req, res) => {
     try {
         const { userId } = req.params;
+        const {startDate, endDate} = req.query;
         const organizationId = req.orgId;
 
-        if (req.role === "member" &&
+        if(!startDate || !endDate) {
+            return res.json({message: "Please Select the dates!"})
+        }
+
+        if ((req.role === "member" || req.role === "manager") &&
             userId !== req.user._id.toString()) {
             return res.status(403).json({ message: "You are not authorized" });
         }
 
+        const start = new Date(startDate);
+        const end = new Date(endDate)
+
         const attendance = await Attendance.find({
             userId,
-            organizationId
+            organizationId,
+            date: {
+                $gte: start,
+                $lte: end
+            },
         }).sort({ date: -1 });
 
         res.status(200).json({ message: "Success", attendance })
@@ -144,7 +156,6 @@ exports.getPerformance = async (req, res) => {
         if (!startDate || !endDate) {
             return res.status(400).json({ message: "Start and End dates required" });
         }
-        console.log("Query:", startDate, endDate);
 
         // Get all attendance for org in month
         const records = await Attendance.find({
@@ -154,7 +165,6 @@ exports.getPerformance = async (req, res) => {
                 $lte: new Date(endDate)
             }
         });
-        console.log("Records found:", records.length);
         // Group by user
         const performance = {};
         records.forEach(r => {

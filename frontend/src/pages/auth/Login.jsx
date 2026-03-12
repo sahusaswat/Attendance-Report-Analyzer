@@ -83,6 +83,8 @@ function Login() {
 
         </form>
 
+        <button className="text-blue-500"><Link to={"/forgotpassword"}>ForgotPassword?</Link></button>
+
         {/* Divider */}
         <div className="my-6 border-t"></div>
 

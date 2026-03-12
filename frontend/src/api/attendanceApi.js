@@ -1,6 +1,8 @@
 import instance from "./axiosApi";
 
-export const getAttendanceByUser = async (userId) => {
-    const res = await instance.get(`/attendance/user/${userId}`);
+export const getAttendanceByUser = async (userId, startDate, endDate) => {
+    const res = await instance.get(`/attendance/user/${userId}`, {
+        params: { startDate, endDate }
+    });
     return res.data;
 }

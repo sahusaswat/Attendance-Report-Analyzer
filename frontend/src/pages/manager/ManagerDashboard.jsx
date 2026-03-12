@@ -93,7 +93,7 @@ function ManagerDashboard() {
 
         {/* Organization Header */}
 
-        <div className="bg-blue-200 shadow-lg rounded-lg p-6 flex justify-between items-center mb-8">
+        <div className="bg-gradient-to-r from-blue-500 to-purple-400 text-white shadow-lg rounded-lg p-6 flex justify-between items-center mb-8">
 
           <div>
 

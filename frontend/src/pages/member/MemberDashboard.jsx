@@ -6,100 +6,138 @@ import LogoutButton from "../../components/LogoutButton.jsx";
 function MemberDashboard() {
   const { user } = useAuth();
   const [attendance, setattendance] = useState([]);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("")
 
-  useEffect(() => {
-    if (!user?._id) return;
+  if (!user?._id) return;
 
-    const fetchAttendance = async () => {
-      try {
-        const res = await getAttendanceByUser(user._id);
-        console.log("FRONTEND RESPONSE:", res);
-        setattendance(res.attendance);
-      } catch (error) {
-        console.log(error.response?.data);
-      }
-    };
+  const fetchAttendance = async () => {
+    if (!startDate || !endDate) {
+      return alert("Please select date!")
+    }
+    try {
+      const res = await getAttendanceByUser(user._id, startDate, endDate);
+      setattendance(res.attendance);
+      console.log(res, 'RES')
+    } catch (error) {
+      console.log(error.response?.data);
+    }
+  };
 
-    fetchAttendance();
-  }, [user]);
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
+    <div className="min-h-screen bg-gray-100">
 
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center mb-8 sticky top-0 bg-white shadow-xl w-fullscreen h-18 p-6">
         <h1 className="text-3xl font-bold text-gray-800">
           Member Dashboard
         </h1>
 
         <LogoutButton />
       </div>
+      <div className="p-6">
+        {/* Welcome Card */}
+        <div className="bg-gradient-to-r from-blue-500 to-purple-400 text-white p-6 rounded-2xl shadow-lg mb-8 flex items-center justify-between">
 
-      {/* Welcome Card */}
-      <div className="bg-white p-6 rounded-xl shadow mb-8">
-        <h2 className="text-xl font-semibold text-gray-700">
-          Welcome, {user?.name}
-        </h2>
-        <p className="text-gray-500 mt-1">
-          Here is your attendance record.
-        </p>
-      </div>
+          <div>
+            <h2 className="text-2xl font-bold">
+              Welcome back, {user?.name} 👋
+            </h2>
 
-      {/* Attendance Table */}
-      <div className="bg-white rounded-xl shadow overflow-hidden">
+            <p className="text-blue-100 mt-1">
+              Here is your attendance overview.
+            </p>
+          </div>
 
-        <div className="p-4 border-b">
-          <h3 className="text-lg font-semibold text-gray-700">
-            Attendance History
-          </h3>
         </div>
 
-        <table className="w-full text-left">
+        {/* Date Range with Button */}
+        <div className="bg-white p-4 rounded-xl shadow mb-6 flex flex-wrap items-center gap-4">
 
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="p-3 text-gray-600">Date</th>
-              <th className="p-3 text-gray-600">Status</th>
-            </tr>
-          </thead>
+          <div className="flex flex-col">
+            <label className="text-sm text-gray-500 mb-1">Start Date</label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
 
-          <tbody>
+          <div className="flex flex-col">
+            <label className="text-sm text-gray-500 mb-1">End Date</label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
 
-            {attendance.length === 0 ? (
+          <button
+            onClick={fetchAttendance}
+            className="mt-5 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition"
+          >
+            View Report
+          </button>
+
+        </div>
+
+        {/* Attendance Table */}
+        <div className="bg-white rounded-xl shadow overflow-hidden">
+
+          <div className="p-4 border-b">
+            <h3 className="text-lg font-semibold text-gray-700">
+              Attendance History
+            </h3>
+          </div>
+
+          <table className="w-full text-left">
+
+            <thead className="bg-gray-50">
               <tr>
-                <td colSpan="2" className="p-4 text-center text-gray-500">
-                  No attendance records found
-                </td>
+                <th className="p-3 text-gray-600">Date</th>
+                <th className="p-3 text-gray-600">Status</th>
               </tr>
-            ) : (
-              attendance.map((a) => (
-                <tr key={a._id} className="border-t">
+            </thead>
 
-                  <td className="p-3">
-                    {new Date(a.date).toLocaleDateString()}
+            <tbody>
+
+              {attendance.length === 0 ? (
+                <tr>
+                  <td colSpan="2" className="p-4 text-center text-gray-500">
+                    No attendance records found
                   </td>
-
-                  <td className="p-3">
-                    <span
-                      className={`px-3 py-1 rounded-full text-sm ${
-                        a.status === "Present"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
-                      }`}
-                    >
-                      {a.status}
-                    </span>
-                  </td>
-
                 </tr>
-              ))
-            )}
+              ) : (
+                attendance.map((a) => (
+                  <tr key={a._id} className="border-t">
 
-          </tbody>
+                    <td className="p-3">
+                      {new Date(a.date).toLocaleDateString()}
+                    </td>
 
-        </table>
+                    <td className="p-3">
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm ${a.status === "present"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                          }`}
+                      >
+                        {a.status}
+                      </span>
+                    </td>
+
+                  </tr>
+                ))
+              )}
+
+            </tbody>
+
+          </table>
+        </div>
       </div>
-
     </div>
   );
 }
