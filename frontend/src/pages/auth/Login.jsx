@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import instance from "../../api/axiosApi.js";
 import { useAuth } from "../../context/AuthContext.jsx";
+import { Eye, EyeOff } from "lucide-react";
 
 function Login() {
   const [email, setemail] = useState("");
   const [password, setpassword] = useState("");
+  const [showpassword, setshowpassword] = useState(false)
   const navigate = useNavigate();
   const { setuser } = useAuth();
 
@@ -66,17 +68,24 @@ function Login() {
           />
 
           <input
-            type="password"
+            type={showpassword ? "text" : "password"}
             placeholder="Password"
             className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={password}
             onChange={(e) => setpassword(e.target.value)}
             required
           />
+          <button
+            type="button"
+            className="fixed top-100 right-146 -translate-y-1/2 curosr-pointer text-gray-400"
+            onClick={() => setshowpassword(!showpassword)}>
+            {showpassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
+
 
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
+            className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition cursor-pointer"
           >
             Login
           </button>

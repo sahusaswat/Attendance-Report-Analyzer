@@ -18,7 +18,7 @@ router.post("/login", login);
 router.post("/verify-email", verifyEmail);
 router.post("/resend-code", resendcode);
 router.post("/forgotpassword", forgotpassword)
-router.post("resetpassword/:token", resetpassword)
+router.post("/resetpassword/:token", resetpassword)
 
 router.post("/logout", (req,res)=> {
     res.clearCookie("token");

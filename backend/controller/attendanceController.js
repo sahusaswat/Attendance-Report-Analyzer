@@ -273,4 +273,26 @@ exports.DashboardStats = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: error.message })
     }
+};
+
+exports.downloadAttendance = async (req,res) => {
+    try {
+        const attendance = await Attendance.find({
+            orgId: req.user.orgId
+        }).populate("userId", "name email");
+        
+        let csv = "Name,Email,Date,Status\n";
+
+        attendance.forEach(record =>{
+            csv += `${record.userId.name},${record.userId.email},${record.date}, ${record.status}\n`
+        });
+
+        res.header("Content-type", "text/csv");
+        res.attachment("attendance-report.csv");
+
+        return res.send(csv);
+        
+    } catch (error) {
+        res.status(500).json({message: error.message})
+    }
 }

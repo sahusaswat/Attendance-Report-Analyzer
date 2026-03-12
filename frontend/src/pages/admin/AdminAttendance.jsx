@@ -93,6 +93,25 @@ function AdminAttendance() {
         } catch (error) {
             alert("Upload Failed")
         }
+    };
+
+    const downloadAttendance = async () => {
+        try {
+            const res = await instance.get("/attendance/download", {
+                responseType: Blob
+            });
+
+            const url = window.URL.createObjectURL(new Blob([res.data]));
+
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download", "attendance-report.csv");
+
+            document.body.appendChild(link);
+            link.click();
+        } catch (error) {
+
+        }
     }
 
     return (
@@ -118,7 +137,7 @@ function AdminAttendance() {
 
                 </div>
 
-                <div className="bg-white p-4 rounded-lg shadow-md w-[450px]">
+                <div className="bg-white p-4 rounded-lg shadow-md w-[450px] mb-4 mt-4">
 
                     <h2 className="text-lg font-semibold mb-3">
                         Upload Attendance CSV
@@ -139,6 +158,13 @@ function AdminAttendance() {
                     </button>
 
                 </div>
+
+                <button
+                    onClick={downloadAttendance}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 mb-4 cursor-pointer"
+                >
+                    Download Report
+                </button>
 
                 {result && (
 

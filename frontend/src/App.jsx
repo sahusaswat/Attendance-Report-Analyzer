@@ -18,6 +18,7 @@ import AdminAssignments from "./pages/admin/AdminAssignments.jsx";
 import VerifyCode from "./pages/auth/VerifyCode.jsx";
 import Verified from "./pages/auth/Verified.jsx";
 import ForgotPassword from "./pages/auth/ForgotPassword.jsx";
+import ResetPassword from "./pages/auth/ResetPassword.jsx";
 
 function App() {
   console.log("APP MOUNTED");
@@ -38,6 +39,7 @@ function App() {
         <Route path="/verify-code" element={<VerifyCode/>}/>
         <Route path="/verified" element={<Verified/>}/>
         <Route path="/forgotpassword" element={<ForgotPassword/>}/>
+        <Route path="/reset-password/:token" element={<ResetPassword/>}/>
 
 
         <Route
