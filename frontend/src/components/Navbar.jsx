@@ -13,7 +13,7 @@ function Navbar() {
         onClick={() => navigate(path)}
         className={`w-full text-left px-4 py-2 rounded-lg transition 
         ${active
-          ? "bg-purple-500 text-white"
+          ? "bg-violet-500 text-white"
           : "text-gray-700 hover:bg-purple-200"
         }`}
       >
@@ -43,6 +43,19 @@ function Navbar() {
 
         {navItem("/assignments", "Team Management")}
 
+        {navItem("/editrecords", "Edit Records")}
+
+        {navItem("/", "Generate Payslip")}
+
+        {navItem("/", "Notification")}
+
+        {navItem("/", "Analyzer")}
+
+        {navItem("/", "AI Bot")}
+
+        {navItem("/", "Settings")}
+
+        {navItem("/", "Feedback")}
       </div>
 
     </div>

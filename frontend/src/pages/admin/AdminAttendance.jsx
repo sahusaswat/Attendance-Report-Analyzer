@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { useAuth } from "../../context/AuthContext";
 import instance from "../../api/axiosApi";
 import Navbar from "../../components/Navbar";
 
+
 function AdminAttendance() {
 
-    const { user } = useAuth();
 
     const [members, setMembers] = useState([]);
     const [attendance, setAttendance] = useState({});

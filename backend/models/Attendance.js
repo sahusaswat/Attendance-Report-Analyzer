@@ -20,6 +20,10 @@ const attendanceSchema = new mongoose.Schema({
         enum: ["present", "absent", "half-day", "leave"],
         required: true
     },
+    lateStatus: {
+        type: Boolean,
+        default: false
+    },
     markedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
@@ -38,6 +42,15 @@ const attendanceSchema = new mongoose.Schema({
         type: String,
         enum: ["manual", "csv", "system"],
         default: "manual"
+    },
+
+    updatedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+    },
+
+    updatedAt: {
+        type: Date
     }
 }, { timestamps: true });
 

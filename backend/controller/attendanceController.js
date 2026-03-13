@@ -7,7 +7,6 @@ exports.getOrganizationMembers = async (req, res) => {
 
         const orgId = req.orgId;
 
-        // ADMIN → gets all
         if (req.role === "admin") {
 
             const members = await Membership.find({
@@ -20,7 +19,6 @@ exports.getOrganizationMembers = async (req, res) => {
             return res.status(200).json({ members });
         }
 
-        // MANAGER → gets only assigned users
         if (req.role === "manager") {
 
             const manager = await User.findById(req.user._id);
@@ -108,7 +106,8 @@ exports.getAttendanceByDate = async (req, res) => {
 
         const attendance = await Attendance.find(filter)
             .populate("userId", "name email role")
-            .populate("markedBy", "name role");
+            .populate("markedBy", "name role")
+            .sort({date: -1});
 
         res.status(201).json({ message: "AttendanceByDate successfuly retrieved!", attendance })
     } catch (error) {
@@ -119,11 +118,11 @@ exports.getAttendanceByDate = async (req, res) => {
 exports.getAttendanceByUser = async (req, res) => {
     try {
         const { userId } = req.params;
-        const {startDate, endDate} = req.query;
+        const { startDate, endDate } = req.query;
         const organizationId = req.orgId;
 
-        if(!startDate || !endDate) {
-            return res.json({message: "Please Select the dates!"})
+        if (!startDate || !endDate) {
+            return res.json({ message: "Please Select the dates!" })
         }
 
         if ((req.role === "member" || req.role === "manager") &&
@@ -132,7 +131,7 @@ exports.getAttendanceByUser = async (req, res) => {
         }
 
         const start = new Date(startDate);
-        const end = new Date(endDate)
+        const end = new Date(endDate);
 
         const attendance = await Attendance.find({
             userId,
@@ -157,7 +156,6 @@ exports.getPerformance = async (req, res) => {
             return res.status(400).json({ message: "Start and End dates required" });
         }
 
-        // Get all attendance for org in month
         const records = await Attendance.find({
             organizationId: orgId,
             date: {
@@ -165,7 +163,7 @@ exports.getPerformance = async (req, res) => {
                 $lte: new Date(endDate)
             }
         });
-        // Group by user
+
         const performance = {};
         records.forEach(r => {
             const id = r.userId.toString();
@@ -178,7 +176,7 @@ exports.getPerformance = async (req, res) => {
                 performance[id] += 1;
             }
         });
-        // Count working days
+
         let totalDays = 0;
 
         let current = new Date(startDate + "T00:00:00");
@@ -201,7 +199,7 @@ exports.getPerformance = async (req, res) => {
             totalDays++;
             current.setDate(current.getDate() + 1);
         }
-        // Calculate %
+
         const users = await Membership.find({
             userId: { $in: Object.keys(performance) },
             orgId
@@ -240,25 +238,28 @@ exports.DashboardStats = async (req, res) => {
         tomorrow.setDate(today.getDate() + 1);
 
         const totalPresent = await Attendance.countDocuments({
+            organizationId: req.orgId,
             date: { $gte: today, $lt: tomorrow },
             status: "present"
         });
 
         const leaveCount = await Attendance.countDocuments({
+            organizationId: req.orgId,
             date: { $gte: today, $lt: tomorrow },
             status: "leave"
         });
 
         const totalWorkers = await Membership.countDocuments({
+            organizationId: req.orgId,
             role: { $in: ["manager", "member"] }
         });
 
         // Not the correct performers list
-        const topPerformers = await Membership.find({ role: "member" })
+        const topPerformers = await Membership.find({ organizatoinId: req.orgId, role: "member" })
             .populate("userId", "name")
             .limit(2);
 
-        const lowPerformers = await Membership.find({ role: "member" })
+        const lowPerformers = await Membership.find({ organizatoinId: req.orgId, role: "member" })
             .populate("userId", "name")
             .sort({ _id: -1 })
             .limit(2);
@@ -275,15 +276,20 @@ exports.DashboardStats = async (req, res) => {
     }
 };
 
-exports.downloadAttendance = async (req,res) => {
+exports.downloadAttendance = async (req, res) => {
+    const { startDate, endDate } = req.query;
     try {
         const attendance = await Attendance.find({
-            orgId: req.user.orgId
+            organizationId: req.user.orgId,
+            date: {
+                $gte: new Date(startDate),
+                $lte: new Date(endDate)
+            }
         }).populate("userId", "name email");
-        
+
         let csv = "Name,Email,Date,Status\n";
 
-        attendance.forEach(record =>{
+        attendance.forEach(record => {
             csv += `${record.userId.name},${record.userId.email},${record.date}, ${record.status}\n`
         });
 
@@ -291,8 +297,64 @@ exports.downloadAttendance = async (req,res) => {
         res.attachment("attendance-report.csv");
 
         return res.send(csv);
-        
+
     } catch (error) {
-        res.status(500).json({message: error.message})
+        res.status(500).json({ message: error.message })
     }
-}
+};
+
+exports.UpdateAttendance = async (req, res) => {
+    try {
+        const attendance = await Attendance.findById(req.params.id).populate("userId");
+
+        if (!attendance) {
+            return res.status(400).json({ message: "Attendance Not found!" });
+        };
+
+        if (req.user.role === "member") {
+            return res.status(403).json({ message: "You are not authorized!" })
+        };
+
+        if (req.role === "manager") {
+            const manager = await User.findById(req.user._id);
+            const assigned = manager.assignedUsers || [];
+            if (!assigned.includes(attendance.userId._id.toString())) {
+                return res.status(403).json({ message: "Not your member" });
+            }
+        }
+
+        attendance.status = req.body.status || attendance.status;
+        await attendance.save();
+
+        res.status(201).json({ message: "Attendance Successfully Updated!" });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+exports.DeleteRecords = async (req, res) => {
+    try {
+        const attendance = await Attendance.findById(req.params.id).populate("userId");
+
+        if (!attendance) {
+            return res.status(400).json({ message: "Attendance Not found!" });
+        };
+
+        if (req.user.role === "member") {
+            return res.status(403).json({ message: "You are not authorized!" })
+        };
+
+        if(req.role === "manager"){
+            const manager = await User.findById(req.user._id);
+            const assigned = manager.assignedUsers || [];
+            if(!assigned.includes(attendance.userId._id.toString())){
+                return res.status(403).json({message:"Not your member"});
+            }
+        }
+        await attendance.deleteOne();
+
+        res.status(200).json({ message: "Attendance Deleted!" });
+    } catch (error) {
+        res.status(500).json({ message: error.message })
+    }
+};

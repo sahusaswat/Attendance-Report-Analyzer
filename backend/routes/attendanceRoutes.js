@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { getAttendanceByDate, getAttendanceByUser, getOrganizationMembers, markAttendanceBulk, getPerformance, downloadAttendance} = require("../controller/attendanceController.js");
+const { getAttendanceByDate, getAttendanceByUser, getOrganizationMembers, markAttendanceBulk, getPerformance, downloadAttendance, UpdateAttendance, DeleteRecords} = require("../controller/attendanceController.js");
 const {addMembersToManager, getAssignments} = require("../controller/addMembersToManagerController.js");
 const {uploadAttendance} = require("../controller/csvParsingController.js")
 const {protect} = require("../middleware/authMiddleware.js");
@@ -17,7 +17,9 @@ router.get("/performance", protect, getPerformance)
 router.post("/mark-bulk", protect, markAttendanceBulk);
 router.post("/assign", protect, addMembersToManager);
 router.post("/upload", protect, upload.single("file"), uploadAttendance);
-router.get("/download",protect, downloadAttendance)
+router.get("/download",protect, downloadAttendance);
+router.put("/update/:id", protect, UpdateAttendance);
+router.delete("/delete/:id", protect, DeleteRecords);
 
 module.exports = router;
 
