@@ -22,6 +22,8 @@ import Verified from "./pages/auth/Verified.jsx";
 import ForgotPassword from "./pages/auth/ForgotPassword.jsx";
 import ResetPassword from "./pages/auth/ResetPassword.jsx";
 import EditRecords from "./pages/attendance/EditRecords.jsx";
+import ManagerViewAttendance from "./pages/manager/ManagerViewAttendance.jsx";
+import TeamAttendance from "./pages/attendance/TeamAttendance.jsx";
 
 function App() {
   console.log("APP MOUNTED");
@@ -45,6 +47,8 @@ function App() {
         <Route path="/forgotpassword" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/editrecords" element={<EditRecords />} />
+        <Route path="/manager/view-attendance" element={<ManagerViewAttendance/>} />
+        <Route path="/team-attendance" element={<TeamAttendance/>} />
 
 
         <Route

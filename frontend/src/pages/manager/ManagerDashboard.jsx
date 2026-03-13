@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import instance from "../../api/axiosApi";
 import { useAuth } from "../../context/AuthContext";
-import Navbar from "../../components/Navbar";
 import LogoutButton from "../../components/LogoutButton";
+import { Link } from "react-router-dom";
 
 function ManagerDashboard() {
 
@@ -94,7 +94,6 @@ function ManagerDashboard() {
         {/* Organization Header */}
 
         <div className="bg-gradient-to-r from-blue-500 to-purple-400 text-white shadow-lg rounded-lg p-6 flex justify-between items-center mb-8">
-
           <div>
 
             <h1 className="text-3xl font-bold">
@@ -120,6 +119,10 @@ function ManagerDashboard() {
           </div>
 
         </div>
+
+        <button className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 hover:shadow-md transition-all duration-200 cursor-pointer">
+          <Link to={"/manager/view-attendance"}>View-Attendance</Link>
+          </button>
 
         {/* Attendance Section */}
 

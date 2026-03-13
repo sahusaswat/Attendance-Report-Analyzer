@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { getAttendanceByUser } from "../../api/attendanceApi.js";
 import { useAuth } from "../../context/AuthContext.jsx";
 import LogoutButton from "../../components/LogoutButton.jsx";
+import { toast } from "react-toastify";
 
 function MemberDashboard() {
   const { user } = useAuth();
@@ -13,14 +14,13 @@ function MemberDashboard() {
 
   const fetchAttendance = async () => {
     if (!startDate || !endDate) {
-      return alert("Please select date!")
+      return toast.error("Please select date!")
     }
     try {
       const res = await getAttendanceByUser(user._id, startDate, endDate);
       setattendance(res.attendance);
-      console.log(res, 'RES')
     } catch (error) {
-      console.log(error.response?.data);
+      toast.error(error.message)
     }
   };
 
@@ -99,6 +99,7 @@ function MemberDashboard() {
               <tr>
                 <th className="p-3 text-gray-600">Date</th>
                 <th className="p-3 text-gray-600">Status</th>
+                <th className="p-3 text-gray-600">Entry</th>
               </tr>
             </thead>
 
@@ -115,7 +116,7 @@ function MemberDashboard() {
                   <tr key={a._id} className="border-t">
 
                     <td className="p-3">
-                      {new Date(a.date).toLocaleDateString()}
+                      {new Date(a.date).toLocaleDateString("en-IN")}
                     </td>
 
                     <td className="p-3">
@@ -128,7 +129,25 @@ function MemberDashboard() {
                         {a.status}
                       </span>
                     </td>
+                    {/* Late Status */}
 
+                    <td className="p-3">
+
+                      {a.lateStatus ? (
+
+                        <span className="px-3 py-1 rounded-full text-sm bg-red-100 text-red-700">
+                          Late
+                        </span>
+
+                      ) : (
+
+                        <span className="px-3 py-1 rounded-full text-sm bg-green-100 text-green-700">
+                          On Time
+                        </span>
+
+                      )}
+
+                    </td>
                   </tr>
                 ))
               )}

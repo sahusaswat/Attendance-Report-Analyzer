@@ -138,6 +138,7 @@ const PerformancePage = () => {
                 <th className="p-4">Role</th>
                 <th className="p-4">Present Days</th>
                 <th className="p-4">Total Days</th>
+                <th className="p-4">Late</th>
                 <th className="p-4">Attendance %</th>
               </tr>
 
@@ -180,6 +181,23 @@ const PerformancePage = () => {
 
                     <td className="p-4">
                       {d.totalDays}
+                    </td>
+                    <td className="p-4">
+
+                      <span
+                        className={`px-3 py-1 rounded text-sm font-semibold
+                            ${d.lateEntries > 3
+                            ? "bg-red-200 text-red-800"
+                            : d.lateEntries > 0
+                              ? "bg-yellow-200 text-yellow-800"
+                              : "bg-green-200 text-green-800"
+                          }`}
+                      >
+
+                        {d.lateEntries}
+
+                      </span>
+
                     </td>
 
                     <td className="p-4">

@@ -68,13 +68,28 @@ exports.markAttendanceBulk = async (req, res) => {
             return res.status(400).json({ message: "Hold on youngman! The day is yet to come :P" });
         }
 
-        const formatted = attendanceList.map(a => ({
-            userId: a.userId,
-            status: a.status,
-            organizationId,
-            markedBy,
-            date: new Date(date)
-        }));
+        const formatted = attendanceList.map(a => {
+            let late = false;
+
+            if (a.inTime) {
+
+                const [hour, minute] = a.inTime.split(":").map(Number);
+
+                if (hour > 9 || (hour === 9 && minute > 0)) {
+                    late = true;
+                }
+            }
+            return {
+                userId: a.userId,
+                status: a.status,
+                organizationId,
+                markedBy,
+                inTime: a.inTime,
+                outTime: a.outTime,
+                lateStatus: late,
+                date: new Date(date + "T00:00:00")
+            }
+        });
 
         await Attendance.insertMany(formatted, { ordered: false });
 
@@ -88,15 +103,15 @@ exports.markAttendanceBulk = async (req, res) => {
 exports.getAttendanceByDate = async (req, res) => {
     try {
         const { date } = req.query;
-        const start = new Date(date);
-        const end = new Date(date);
+        const start = new Date(date + "T00:00:00");
+        const end = new Date(date + "T23:59:59");
         end.setHours(23, 59, 59, 999);
 
         let filter = {
             organizationId: req.orgId,
             date: {
                 $gte: start,
-                $lt: end
+                $lte: end
             },
         };
 
@@ -107,7 +122,7 @@ exports.getAttendanceByDate = async (req, res) => {
         const attendance = await Attendance.find(filter)
             .populate("userId", "name email role")
             .populate("markedBy", "name role")
-            .sort({date: -1});
+            .sort({ date: -1 });
 
         res.status(201).json({ message: "AttendanceByDate successfuly retrieved!", attendance })
     } catch (error) {
@@ -117,21 +132,36 @@ exports.getAttendanceByDate = async (req, res) => {
 
 exports.getAttendanceByUser = async (req, res) => {
     try {
+
         const { userId } = req.params;
         const { startDate, endDate } = req.query;
         const organizationId = req.orgId;
 
         if (!startDate || !endDate) {
-            return res.json({ message: "Please Select the dates!" })
+            return res.status(400).json({ message: "Please select dates" });
         }
 
-        if ((req.role === "member" || req.role === "manager") &&
-            userId !== req.user._id.toString()) {
-            return res.status(403).json({ message: "You are not authorized" });
+        // Member can only see their own attendance
+        if (req.role === "member" && userId !== req.user._id.toString()) {
+            return res.status(403).json({ message: "Not authorized" });
         }
 
-        const start = new Date(startDate);
-        const end = new Date(endDate);
+        // Manager can only see assigned members
+        if (req.role === "manager") {
+
+            const manager = await User.findById(req.user._id);
+            const assigned = manager?.assignedUsers || [];
+
+            if (!assigned.includes(userId) && userId !== req.user._id.toString()) {
+                return res.status(403).json({
+                    message: "This employee is not assigned to you"
+                });
+            }
+
+        }
+
+        const start = new Date(startDate + "T00:00:00");
+        const end = new Date(endDate + "T23:59:59");
 
         const attendance = await Attendance.find({
             userId,
@@ -139,18 +169,81 @@ exports.getAttendanceByUser = async (req, res) => {
             date: {
                 $gte: start,
                 $lte: end
-            },
-        }).sort({ date: -1 });
+            }
+        })
+        .populate("userId", "name")
+        .sort({ date: -1 });
 
-        res.status(200).json({ message: "Success", attendance })
+        res.status(200).json({
+            success: true,
+            attendance
+        });
+
     } catch (error) {
-        res.status(500).json({ message: error.message });
+
+        res.status(500).json({
+            message: error.message
+        });
+
     }
 };
+
+exports.getTeamAttendance = async (req,res) => {
+
+    console.log(`REQ.USER: ${req.user}, REQ.ROLE:${req.role}, REQ.ORGID:${req.orgId}`)
+    try {
+
+        const {startDate, endDate} = req.query;
+        const organizationId = req.orgId;
+
+
+        if(!startDate && !endDate) {
+            return res.status(404).json({message: "Please select both dates!"})
+        }
+
+        const start = new Date(startDate);
+        start.setHours(0,0,0,0);
+
+        const end = new Date(endDate);
+        end.setHours(23,59,59,999);
+
+        let userIds = [];
+
+        if(req.role === "admin") {
+            const members = await Membership.find({
+                orgId: organizationId,
+                role: {$in: ["manager", "member"]}
+            });
+            userIds = members.map(m => m.userId)
+        }
+
+        if(req.role === "manager") {
+            const manager = await User.findById(req.user._id);
+            userIds = manager?.assignedUsers || [];
+        }
+
+        
+
+        const attendance = await Attendance.find({
+            organizationId: organizationId,
+            userId: {$in: userIds},
+            date: {$gte: start, $lte: end}
+        })
+        .populate("userId", "name email")
+        .sort({date: -1});
+
+        res.status(200).json({attendance})
+
+    } catch(error) {
+        res.status(500).json({message: error.message});
+    }
+}
 
 exports.getPerformance = async (req, res) => {
     try {
         const { startDate, endDate, excludeSat, excludeSun } = req.query;
+        const start = new Date(startDate + "T00:00:00");
+        const end = new Date(endDate + "T23:59:59");
         const orgId = req.orgId;
         if (!startDate || !endDate) {
             return res.status(400).json({ message: "Start and End dates required" });
@@ -159,24 +252,33 @@ exports.getPerformance = async (req, res) => {
         const records = await Attendance.find({
             organizationId: orgId,
             date: {
-                $gte: new Date(startDate),
-                $lte: new Date(endDate)
+                $gte: start,
+                $lte: end
             }
         });
 
         const performance = {};
+
         records.forEach(r => {
+
             const id = r.userId.toString();
 
             if (!performance[id]) {
-                performance[id] = 0;
+                performance[id] = {
+                    present: 0,
+                    late: 0
+                };
             }
 
             if (r.status === "present") {
-                performance[id] += 1;
+                performance[id].present += 1;
             }
-        });
 
+            if (r.status === "present" && r.lateStatus) {
+                performance[id].late += 1;
+            }
+
+        });
         let totalDays = 0;
 
         let current = new Date(startDate + "T00:00:00");
@@ -201,14 +303,15 @@ exports.getPerformance = async (req, res) => {
         }
 
         const users = await Membership.find({
-            userId: { $in: Object.keys(performance) },
-            orgId
+            orgId,
+            role: { $in: ["manager", "member"] }
         }).populate("userId", "name email");
 
         const result = users.map(u => {
 
             const id = u.userId._id.toString();
-            const present = performance[id] || 0;
+            const present = performance[id]?.present || 0;
+            const late = performance[id]?.late || 0
 
             return {
                 name: u.userId.name,
@@ -216,6 +319,7 @@ exports.getPerformance = async (req, res) => {
                 role: u.role,
                 presentDays: present,
                 totalDays,
+                lateEntries: late,
                 percentage: totalDays === 0
                     ? "0.00"
                     : ((present / totalDays) * 100).toFixed(2)
@@ -255,11 +359,11 @@ exports.DashboardStats = async (req, res) => {
         });
 
         // Not the correct performers list
-        const topPerformers = await Membership.find({ organizatoinId: req.orgId, role: "member" })
+        const topPerformers = await Membership.find({ organizationId: req.orgId, role: "member" })
             .populate("userId", "name")
             .limit(2);
 
-        const lowPerformers = await Membership.find({ organizatoinId: req.orgId, role: "member" })
+        const lowPerformers = await Membership.find({ organizationId: req.orgId, role: "member" })
             .populate("userId", "name")
             .sort({ _id: -1 })
             .limit(2);
@@ -344,11 +448,11 @@ exports.DeleteRecords = async (req, res) => {
             return res.status(403).json({ message: "You are not authorized!" })
         };
 
-        if(req.role === "manager"){
+        if (req.role === "manager") {
             const manager = await User.findById(req.user._id);
             const assigned = manager.assignedUsers || [];
-            if(!assigned.includes(attendance.userId._id.toString())){
-                return res.status(403).json({message:"Not your member"});
+            if (!assigned.includes(attendance.userId._id.toString())) {
+                return res.status(403).json({ message: "Not your member" });
             }
         }
         await attendance.deleteOne();

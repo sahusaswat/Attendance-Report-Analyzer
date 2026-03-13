@@ -48,10 +48,6 @@ const attendanceSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
     },
-
-    updatedAt: {
-        type: Date
-    }
 }, { timestamps: true });
 
 attendanceSchema.index(
