@@ -1,8 +1,10 @@
 const express = require("express");
 const router = express.Router();
+const {protect} = require("../middleware/authMiddleware.js")
 
-const {DashboardStats} = require("../controller/attendanceController.js");
+const {getTodayStats, getDashboardAnalytics} = require("../controller/AnalyticsController.js")
 
-router.get("/dashboard-stats", DashboardStats);
+router.get("/dashboard-analytics-stats",protect, getDashboardAnalytics);
+router.get("/dashboard-todaystats",protect, getTodayStats);
 
 module.exports = router;

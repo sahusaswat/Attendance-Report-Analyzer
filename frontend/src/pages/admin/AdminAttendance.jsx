@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import instance from "../../api/axiosApi";
 import Navbar from "../../components/Navbar";
+import { Link } from "react-router-dom";
 
 
 function AdminAttendance() {
@@ -136,45 +137,95 @@ function AdminAttendance() {
 
                 </div>
 
-                <div className="bg-white p-4 rounded-lg shadow-md w-[450px] mb-4 mt-4">
+                <div className="bg-white rounded-xl shadow p-6 w-[480px] space-y-6">
 
-                    <h2 className="text-lg font-semibold mb-3">
-                        Upload Attendance CSV
+                    {/* Title */}
+
+                    <h2 className="text-xl font-semibold text-gray-800">
+                        Attendance Data Tools
                     </h2>
 
-                    <input
-                        type="file"
-                        accept=".csv"
-                        onChange={(e) => setFile(e.target.files[0])}
-                        className="mb-3 cursor-pointer"
-                    />
 
-                    <button
-                        onClick={uploadCSV}
-                        className="bg-blue-500 text-white px-4 py-2 rounded cursor-pointer"
-                    >
-                        Upload
-                    </button>
+                    {/* CSV Upload Section */}
 
-                </div>
+                    <div className="space-y-3">
 
-                <button
-                    onClick={downloadAttendance}
-                    className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 mb-4 cursor-pointer"
-                >
-                    Download Report
-                </button>
+                        <p className="text-sm text-gray-500">
+                            Upload attendance records using a CSV file.
+                        </p>
 
-                {result && (
+                        <input
+                            type="file"
+                            accept=".csv"
+                            onChange={(e) => setFile(e.target.files[0])}
+                            className="block w-full text-sm text-gray-600
+      file:mr-4 file:py-2 file:px-4
+      file:rounded-lg file:border-0
+      file:text-sm file:font-semibold
+      file:bg-blue-50 file:text-blue-700
+      hover:file:bg-blue-100 cursor-pointer"
+                        />
 
-                    <div className="mt-4">
-
-                        <p>Processed: {result.success}</p>
-                        <p>Skipped: {result.skipped.length}</p>
+                        <button
+                            onClick={uploadCSV}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-medium"
+                        >
+                            Upload CSV
+                        </button>
 
                     </div>
 
-                )}
+
+                    {/* Divider */}
+
+                    <div className="border-t"></div>
+
+
+                    {/* Download Section */}
+
+                    <div className="flex justify-between items-center">
+
+                        <p className="text-sm text-gray-600">
+                            Download attendance report
+                        </p>
+
+                        <button
+                            onClick={downloadAttendance}
+                            className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg font-medium"
+                        >
+                            Download CSV
+                        </button>
+
+                    </div>
+
+
+                    {/* Result Section */}
+
+                    {result && (
+
+                        <div className="bg-gray-50 border rounded-lg p-4">
+
+                            <h3 className="text-sm font-semibold text-gray-700 mb-2">
+                                Upload Summary
+                            </h3>
+
+                            <div className="flex gap-6 text-sm">
+
+                                <p className="text-green-600 font-medium">
+                                    Processed: {result.success}
+                                </p>
+
+                                <p className="text-red-500 font-medium">
+                                    Skipped: {result.skipped.length}
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    )}
+
+                </div>
 
                 {/* Attendance Table */}
 

@@ -22,7 +22,7 @@ import Verified from "./pages/auth/Verified.jsx";
 import ForgotPassword from "./pages/auth/ForgotPassword.jsx";
 import ResetPassword from "./pages/auth/ResetPassword.jsx";
 import EditRecords from "./pages/attendance/EditRecords.jsx";
-import ManagerViewAttendance from "./pages/manager/ManagerViewAttendance.jsx";
+import SelfAttendance from "./pages/attendance/SelfAttendance.jsx"
 import TeamAttendance from "./pages/attendance/TeamAttendance.jsx";
 
 function App() {
@@ -47,7 +47,7 @@ function App() {
         <Route path="/forgotpassword" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/editrecords" element={<EditRecords />} />
-        <Route path="/manager/view-attendance" element={<ManagerViewAttendance/>} />
+        <Route path="/self-attendance" element={<SelfAttendance/>} />
         <Route path="/team-attendance" element={<TeamAttendance/>} />
 
 

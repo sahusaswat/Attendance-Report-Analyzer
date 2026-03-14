@@ -171,8 +171,8 @@ exports.getAttendanceByUser = async (req, res) => {
                 $lte: end
             }
         })
-        .populate("userId", "name")
-        .sort({ date: -1 });
+            .populate("userId", "name")
+            .sort({ date: -1 });
 
         res.status(200).json({
             success: true,
@@ -188,54 +188,54 @@ exports.getAttendanceByUser = async (req, res) => {
     }
 };
 
-exports.getTeamAttendance = async (req,res) => {
+exports.getTeamAttendance = async (req, res) => {
 
     console.log(`REQ.USER: ${req.user}, REQ.ROLE:${req.role}, REQ.ORGID:${req.orgId}`)
     try {
 
-        const {startDate, endDate} = req.query;
+        const { startDate, endDate } = req.query;
         const organizationId = req.orgId;
 
 
-        if(!startDate && !endDate) {
-            return res.status(404).json({message: "Please select both dates!"})
+        if (!startDate && !endDate) {
+            return res.status(404).json({ message: "Please select both dates!" })
         }
 
         const start = new Date(startDate);
-        start.setHours(0,0,0,0);
+        start.setHours(0, 0, 0, 0);
 
         const end = new Date(endDate);
-        end.setHours(23,59,59,999);
+        end.setHours(23, 59, 59, 999);
 
         let userIds = [];
 
-        if(req.role === "admin") {
+        if (req.role === "admin") {
             const members = await Membership.find({
                 orgId: organizationId,
-                role: {$in: ["manager", "member"]}
+                role: { $in: ["manager", "member"] }
             });
             userIds = members.map(m => m.userId)
         }
 
-        if(req.role === "manager") {
+        if (req.role === "manager") {
             const manager = await User.findById(req.user._id);
             userIds = manager?.assignedUsers || [];
         }
 
-        
+
 
         const attendance = await Attendance.find({
             organizationId: organizationId,
-            userId: {$in: userIds},
-            date: {$gte: start, $lte: end}
+            userId: { $in: userIds },
+            date: { $gte: start, $lte: end }
         })
-        .populate("userId", "name email")
-        .sort({date: -1});
+            .populate("userId", "name email")
+            .sort({ date: -1 });
 
-        res.status(200).json({attendance})
+        res.status(200).json({ attendance })
 
-    } catch(error) {
-        res.status(500).json({message: error.message});
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 }
 
@@ -333,52 +333,7 @@ exports.getPerformance = async (req, res) => {
     }
 };
 
-exports.DashboardStats = async (req, res) => {
-    try {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
 
-        const tomorrow = new Date(today);
-        tomorrow.setDate(today.getDate() + 1);
-
-        const totalPresent = await Attendance.countDocuments({
-            organizationId: req.orgId,
-            date: { $gte: today, $lt: tomorrow },
-            status: "present"
-        });
-
-        const leaveCount = await Attendance.countDocuments({
-            organizationId: req.orgId,
-            date: { $gte: today, $lt: tomorrow },
-            status: "leave"
-        });
-
-        const totalWorkers = await Membership.countDocuments({
-            organizationId: req.orgId,
-            role: { $in: ["manager", "member"] }
-        });
-
-        // Not the correct performers list
-        const topPerformers = await Membership.find({ organizationId: req.orgId, role: "member" })
-            .populate("userId", "name")
-            .limit(2);
-
-        const lowPerformers = await Membership.find({ organizationId: req.orgId, role: "member" })
-            .populate("userId", "name")
-            .sort({ _id: -1 })
-            .limit(2);
-
-        res.json({
-            totalPresent,
-            leaveCount,
-            topPerformers,
-            lowPerformers,
-            totalWorkers
-        })
-    } catch (error) {
-        res.status(500).json({ message: error.message })
-    }
-};
 
 exports.downloadAttendance = async (req, res) => {
     const { startDate, endDate } = req.query;

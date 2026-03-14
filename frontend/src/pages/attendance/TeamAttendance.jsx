@@ -1,84 +1,171 @@
-import React from 'react'
-import { getTeamAttendance } from '../../api/attendanceApi'
-import { useState } from 'react'
-import { useAuth } from '../../context/AuthContext'
-import { toast } from 'react-toastify'
+import React, { useState } from "react";
+import { getTeamAttendance } from "../../api/attendanceApi";
+import { useAuth } from "../../context/AuthContext";
+import { toast } from "react-toastify";
+import Navbar from "../../components/Navbar";
 
 function TeamAttendance() {
+
     const { user } = useAuth();
+
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
     const [loading, setLoading] = useState(false);
     const [attendance, setAttendance] = useState([]);
+    const [file, setFile] = useState(null)
+    const [result, setResult] = useState(null)
 
-    if (!user?._id) {
-        return null;
-    };
+    if (!user?._id) return null;
 
     const fetchAttendance = async () => {
+
         if (!startDate || !endDate) {
             return toast.error("Select date range!");
         }
+
         try {
+
             setLoading(true);
+
             const res = await getTeamAttendance(startDate, endDate);
-            setAttendance(res.attendance)
+
+            setAttendance(res.attendance);
+
         } catch (error) {
-            return toast.error(error.message)
+
+            toast.error(error.message);
+
         } finally {
-            setLoading(false)
+
+            setLoading(false);
+
+        }
+
+    };
+
+    const uploadCSV = async () => {
+        if (!file) {
+            alert("Please choose a file!")
+            return
+        };
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+            const res = await instance.post("/attendance/upload", formData,
+                {
+                    headers: { "Content-Type": "multipart/form-data" }
+                }
+            )
+            setResult(res.data)
+            alert("CSV uploaded successfully!")
+
+        } catch (error) {
+            alert("Upload Failed")
         }
     };
 
-    return (
-        <>
-            <div className="p-6">
+    const downloadAttendance = async () => {
+        try {
+            const res = await instance.get("/attendance/download", {
+                responseType: Blob
+            });
 
-                {/* Page Title */}
-                <h1 className="text-2xl font-semibold mb-6">
+            const url = window.URL.createObjectURL(new Blob([res.data]));
+
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download", "attendance-report.csv");
+
+            document.body.appendChild(link);
+            link.click();
+        } catch (error) {
+
+        }
+    }
+
+    return (
+
+        <div className="min-h-screen bg-gray-100">
+
+            <Navbar />
+
+            <div className="ml-64 p-6">
+
+                {/* Header */}
+
+                <h1 className="text-2xl font-bold text-gray-800 mb-6">
                     Team Attendance
                 </h1>
 
-                {/* Filter Card */}
-                <div className="bg-white shadow rounded-lg p-6 mb-6">
+                {/* Filters */}
 
-                    <div className="grid md:grid-cols-3 gap-4">
+                <div className="bg-white shadow rounded-xl p-6 mb-6">
 
-                        <input
-                            type="date"
-                            value={startDate}
-                            onChange={(e) => setStartDate(e.target.value)}
-                            className="border p-2 rounded"
-                        />
+                    <div className="flex flex-wrap items-end gap-4">
 
-                        <input
-                            type="date"
-                            value={endDate}
-                            onChange={(e) => setEndDate(e.target.value)}
-                            className="border p-2 rounded"
-                        />
+                        <div>
+
+                            <label className="block text-sm text-gray-500 mb-1">
+                                Start Date
+                            </label>
+
+                            <input
+                                type="date"
+                                value={startDate}
+                                onChange={(e) => setStartDate(e.target.value)}
+                                className="border rounded-lg px-3 py-2"
+                            />
+
+                        </div>
+
+                        <div>
+
+                            <label className="block text-sm text-gray-500 mb-1">
+                                End Date
+                            </label>
+
+                            <input
+                                type="date"
+                                value={endDate}
+                                onChange={(e) => setEndDate(e.target.value)}
+                                className="border rounded-lg px-3 py-2"
+                            />
+
+                        </div>
 
                         <button
                             onClick={fetchAttendance}
-                            className="bg-blue-600 text-white rounded p-2 hover:bg-blue-700 transition"
                             disabled={loading}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium"
                         >
-                            {loading ? "Loading..." : "Fetch Attendance"}
+                            {loading ? "Loading..." : "Generate Report"}
                         </button>
 
                     </div>
 
                 </div>
 
-                <div className="bg-white shadow rounded-lg overflow-hidden">
+                {/* Attendance Table */}
 
-                    <table className="w-full">
+                <div className="bg-white shadow rounded-xl overflow-hidden">
 
-                        <thead className="bg-gray-100 text-left">
+                    <div className="p-4 border-b">
+
+                        <h2 className="text-lg font-semibold text-gray-700">
+                            Attendance Records
+                        </h2>
+
+                    </div>
+
+                    <table className="w-full text-left">
+
+                        <thead className="bg-gray-100 text-gray-700">
 
                             <tr>
                                 <th className="p-3">Date</th>
-                                <th className="p-3">Name</th>
+                                <th className="p-3">Employee</th>
                                 <th className="p-3">Check In</th>
                                 <th className="p-3">Check Out</th>
                                 <th className="p-3">Entry</th>
@@ -88,12 +175,15 @@ function TeamAttendance() {
                         </thead>
 
                         <tbody>
+
                             {attendance.length === 0 && !loading && (
 
                                 <tr>
-                                    <td colSpan="6" className="text-center p-6 text-gray-500">
-                                        No attendance records found
+
+                                    <td colSpan="6" className="text-center p-6 text-gray-400">
+                                        No attendance records found for selected dates
                                     </td>
+
                                 </tr>
 
                             )}
@@ -102,13 +192,14 @@ function TeamAttendance() {
 
                                 <tr
                                     key={record._id}
-                                    className="border-t hover:bg-gray-50">
+                                    className="border-t hover:bg-gray-50"
+                                >
 
                                     <td className="p-3">
-                                        {new Date(record.date).toLocaleDateString()}
+                                        {new Date(record.date).toLocaleDateString("en-IN")}
                                     </td>
 
-                                    <td className='p-3'>
+                                    <td className="p-3 font-medium">
                                         {record.userId?.name || "Unknown"}
                                     </td>
 
@@ -123,28 +214,35 @@ function TeamAttendance() {
                                     <td className="p-3">
 
                                         <span
-                                            className={`px-2 py-1 text-sm rounded ${record.status === "present" && record.lateStatus
-                                                ? "bg-red-100 text-red-600"
-                                                : record.status === "present"
-                                                    ? "bg-green-100 text-green-600"
-                                                    : "bg-gray-100 text-gray-600"
-                                                }`}>
-                                            {
-                                                record.status === "present"
-                                                    ? record.lateStatus ? "Late" : "On Time"
-                                                    : record.status
-                                            }
+                                            className={`px-3 py-1 text-sm rounded-full
+                        ${record.status === "present" && record.lateStatus
+                                                    ? "bg-red-100 text-red-700"
+                                                    : record.status === "present"
+                                                        ? "bg-green-100 text-green-700"
+                                                        : "bg-gray-100 text-gray-700"
+                                                }`}
+                                        >
+                                            {record.status === "present"
+                                                ? record.lateStatus
+                                                    ? "Late"
+                                                    : "On Time"
+                                                : record.status}
                                         </span>
 
                                     </td>
 
                                     <td className="p-3">
-                                        <span className={`px-2 py-1 rounded text-sm ${record.status === "present"
-                                                ? "bg-green-100 text-green-700"
-                                                : "bg-red-100 text-red-700"
-                                            }`}>
+
+                                        <span
+                                            className={`px-3 py-1 rounded-full text-sm
+                        ${record.status === "present"
+                                                    ? "bg-green-100 text-green-700"
+                                                    : "bg-red-100 text-red-700"
+                                                }`}
+                                        >
                                             {record.status}
                                         </span>
+
                                     </td>
 
                                 </tr>
@@ -156,9 +254,13 @@ function TeamAttendance() {
                     </table>
 
                 </div>
+
             </div>
-        </>
-    )
+
+        </div>
+
+    );
+
 }
 
-export default TeamAttendance
+export default TeamAttendance;
