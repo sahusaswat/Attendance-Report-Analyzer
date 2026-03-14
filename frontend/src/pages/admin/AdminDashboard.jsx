@@ -56,36 +56,38 @@ function AdminDashboard() {
     }
   };
 
-  useEffect(() => {
+ useEffect(() => {
 
-    const today = new Date();
-    const past = new Date();
+  if (!ready) return;
 
-    past.setDate(today.getDate() - 30);
+  const today = new Date();
+  const past = new Date();
 
-    const start = past.toISOString().split("T")[0];
-    const end = today.toISOString().split("T")[0];
+  past.setDate(today.getDate() - 30);
 
-    setStartDate(start);
-    setEndDate(end);
+  const start = past.toISOString().split("T")[0];
+  const end = today.toISOString().split("T")[0];
 
-    fetchStatsToday();
-    fetchStatsAnalytics(start, end);
+  setStartDate(start);
+  setEndDate(end);
 
-  }, []);
+  fetchStatsToday();
+  fetchStatsAnalytics(start, end);
 
-  if (!ready || !todaystats || !analytics) {
+}, [ready]);
+
+ if (!ready || !todaystats || !analytics) {
     return <Loader />;
   }
 
-  const attendancePercentage = analytics?.attendancePercentage || 0;
 
-  const attendanceData = [
-    { name: "Present", value: Number(analytics?.attendancePercentage) || 0 },
-    { name: "Leave", value: Number(analytics?.leavePercentage) || 0 },
-    { name: "Absent", value: Number(analytics?.absentPercentage) || 0 }
-  ];
+  const attendancePercentage = Number(analytics?.attendancePercentage) || 0;
 
+const attendanceData = [
+  { name: "Present", value: attendancePercentage },
+  { name: "Leave", value: Number(analytics?.leavePercentage) || 0 },
+  { name: "Absent", value: Number(analytics?.absentPercentage) || 0 }
+];
   const trendData =
     analytics?.trend?.map((item) => ({
       ...item,
@@ -101,7 +103,7 @@ function AdminDashboard() {
 
         {/* HEADER */}
 
-        <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white p-6 rounded-lg shadow flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
+        <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white p-6  mt-16 md:mt-0 rounded-lg shadow flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
 
           <div>
             <h1 className="text-2xl md:text-3xl font-bold">{user?.orgName}</h1>

@@ -24,25 +24,36 @@ function SelfAttendance() {
     try {
 
       setLoading(true);
-
       const res = await getAttendanceByUser(user._id, startDate, endDate);
-
+      console.log("API RESPONSE:", res);
       setAttendance(res.attendance);
 
     } catch (error) {
-
       toast.error(error.message);
-
     } finally {
-
       setLoading(false);
-
     }
 
   };
 
-  return (
+  const entryStyle = (record) => {
+    if (record.status === "present" && record.lateStatus)
+      return "bg-red-100 text-red-600";
 
+    if (record.status === "present")
+      return "bg-green-100 text-green-600";
+
+    return "bg-gray-100 text-gray-600";
+  };
+
+  const entryText = (record) => {
+    if (record.status === "present")
+      return record.lateStatus ? "Late" : "On Time";
+
+    return record.status;
+  };
+
+  return (
     <div className="flex min-h-screen bg-gray-100">
 
       <Navbar />
@@ -50,20 +61,19 @@ function SelfAttendance() {
       <div className="flex-1 md:ml-64 p-4 md:p-8">
 
         {/* Page Title */}
-
-        <h1 className="text-2xl md:text-3xl font-semibold mb-6">
+        <h1 className="text-2xl md:text-3xl font-semibold mt-16 md:mt-0 mb-6">
           My Attendance
         </h1>
 
-        {/* Filter Card */}
+        {/* Filter Section */}
 
-        <div className="bg-white shadow rounded-xl p-4 md:p-6 mb-6">
+        <div className="bg-white rounded-xl shadow-sm border p-4 md:p-6 mb-6">
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
+          <div className="flex flex-col md:flex-row gap-4 items-end">
 
-            <div>
+            <div className="flex flex-col w-full">
 
-              <label className="text-sm text-gray-500 block mb-1">
+              <label className="text-sm text-gray-500 mb-1">
                 Start Date
               </label>
 
@@ -71,14 +81,14 @@ function SelfAttendance() {
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="border rounded-lg px-3 py-2 w-full"
+                className="border rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-500 outline-none"
               />
 
             </div>
 
-            <div>
+            <div className="flex flex-col w-full">
 
-              <label className="text-sm text-gray-500 block mb-1">
+              <label className="text-sm text-gray-500 mb-1">
                 End Date
               </label>
 
@@ -86,14 +96,14 @@ function SelfAttendance() {
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="border rounded-lg px-3 py-2 w-full"
+                className="border rounded-lg px-3 py-2 w-full focus:ring-2 focus:ring-blue-500 outline-none"
               />
 
             </div>
 
             <button
               onClick={fetchAttendance}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition w-full sm:w-auto"
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition w-full md:w-auto"
             >
               {loading ? "Loading..." : "View Report"}
             </button>
@@ -102,102 +112,151 @@ function SelfAttendance() {
 
         </div>
 
-        {/* Attendance Table */}
+        {/* MOBILE VIEW (Cards) */}
 
-        <div className="bg-white shadow rounded-xl overflow-hidden">
+        <div className="grid gap-4 md:hidden">
 
-          <div className="overflow-x-auto">
+          {attendance.length === 0 && !loading && (
+            <div className="text-center text-gray-400 bg-white p-6 rounded-xl shadow">
+              No attendance records found
+            </div>
+          )}
 
-            <table className="min-w-full text-left">
+          {attendance.map((record) => (
 
-              <thead className="bg-gray-100 text-gray-700">
+            <div
+              key={record._id}
+              className="bg-white rounded-xl shadow p-4 space-y-2"
+            >
+
+              <div className="flex justify-between text-sm">
+
+                <span className="text-gray-500">Date</span>
+
+                <span className="font-medium">
+                  {new Date(record.date).toLocaleDateString("en-IN")}
+                </span>
+
+              </div>
+
+              <div className="flex justify-between text-sm">
+
+                <span className="text-gray-500">Check In</span>
+
+                <span>{record.inTime || "-"}</span>
+
+              </div>
+
+              <div className="flex justify-between text-sm">
+
+                <span className="text-gray-500">Check Out</span>
+
+                <span>{record.outTime || "-"}</span>
+
+              </div>
+
+              <div className="flex justify-between text-sm">
+
+                <span className="text-gray-500">Entry</span>
+
+                <span
+                  className={`px-2 py-1 rounded-full text-xs ${entryStyle(record)}`}
+                >
+                  {entryText(record)}
+                </span>
+
+              </div>
+
+              <div className="flex justify-between text-sm">
+
+                <span className="text-gray-500">Status</span>
+
+                <span className="capitalize">{record.status}</span>
+
+              </div>
+
+            </div>
+
+          ))}
+
+        </div>
+
+        {/* DESKTOP TABLE */}
+
+        <div className="hidden md:block bg-white rounded-xl shadow overflow-hidden">
+
+          <table className="min-w-full text-left">
+
+            <thead className="bg-gray-100 text-gray-700 text-sm">
+
+              <tr>
+                <th className="p-4">Date</th>
+                <th className="p-4">Check In</th>
+                <th className="p-4">Check Out</th>
+                <th className="p-4">Entry</th>
+                <th className="p-4">Status</th>
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              {attendance.length === 0 && !loading && (
 
                 <tr>
-                  <th className="p-3">Date</th>
-                  <th className="p-3">Check In</th>
-                  <th className="p-3">Check Out</th>
-                  <th className="p-3">Entry</th>
-                  <th className="p-3">Status</th>
+
+                  <td colSpan="5" className="p-6 text-center text-gray-400">
+                    No attendance records found
+                  </td>
+
                 </tr>
 
-              </thead>
+              )}
 
-              <tbody>
+              {attendance.map((record) => (
 
-                {attendance.length === 0 && !loading && (
+                <tr
+                  key={record._id}
+                  className="border-t hover:bg-gray-50"
+                >
 
-                  <tr>
+                  <td className="p-4">
+                    {new Date(record.date).toLocaleDateString("en-IN")}
+                  </td>
 
-                    <td colSpan="5" className="p-6 text-center text-gray-400">
-                      No attendance records found
-                    </td>
+                  <td className="p-4">{record.inTime || "-"}</td>
 
-                  </tr>
+                  <td className="p-4">{record.outTime || "-"}</td>
 
-                )}
+                  <td className="p-4">
 
-                {attendance.map((record) => (
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm ${entryStyle(record)}`}
+                    >
+                      {entryText(record)}
+                    </span>
 
-                  <tr
-                    key={record._id}
-                    className="border-t hover:bg-gray-50"
-                  >
+                  </td>
 
-                    <td className="p-3">
-                      {new Date(record.date).toLocaleDateString("en-IN")}
-                    </td>
+                  <td className="p-4 capitalize">
+                    {record.status}
+                  </td>
 
-                    <td className="p-3">
-                      {record.inTime || "-"}
-                    </td>
+                </tr>
 
-                    <td className="p-3">
-                      {record.outTime || "-"}
-                    </td>
+              ))}
 
-                    <td className="p-3">
+            </tbody>
 
-                      <span
-                        className={`px-3 py-1 rounded-full text-sm
-                        ${record.status === "present" && record.lateStatus
-                            ? "bg-red-100 text-red-700"
-                            : record.status === "present"
-                              ? "bg-green-100 text-green-700"
-                              : "bg-gray-100 text-gray-700"
-                          }`}
-                      >
-
-                        {record.status === "present"
-                          ? record.lateStatus
-                            ? "Late"
-                            : "On Time"
-                          : record.status}
-
-                      </span>
-
-                    </td>
-
-                    <td className="p-3 capitalize">
-                      {record.status}
-                    </td>
-
-                  </tr>
-
-                ))}
-
-              </tbody>
-
-            </table>
-
-          </div>
+          </table>
 
         </div>
 
       </div>
 
     </div>
-
   );
+
 }
 
 export default SelfAttendance;

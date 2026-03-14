@@ -70,7 +70,7 @@ function ManagerDashboard() {
 
       {/* Main Content */}
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col md: ml-64">
 
         {/* Header */}
 

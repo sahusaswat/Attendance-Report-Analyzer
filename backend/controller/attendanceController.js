@@ -144,6 +144,11 @@ exports.getAttendanceByUser = async (req, res) => {
         const { startDate, endDate } = req.query;
         const organizationId = req.orgId;
 
+        console.log("USER ID:", userId);
+        console.log("ORG ID:", organizationId);
+        console.log("START:", startDate);
+        console.log("END:", endDate);
+
         if (!startDate || !endDate) {
             return res.status(400).json({ message: "Please select dates" });
         }
@@ -167,8 +172,11 @@ exports.getAttendanceByUser = async (req, res) => {
 
         }
 
-        const start = new Date(startDate + "T00:00:00");
-        const end = new Date(endDate + "T23:59:59");
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
 
         const attendance = await Attendance.find({
             userId,
@@ -250,12 +258,14 @@ exports.getTeamAttendance = async (req, res) => {
 exports.getPerformance = async (req, res) => {
     try {
         const { startDate, endDate, excludeSat, excludeSun } = req.query;
-        const start = new Date(startDate + "T00:00:00");
-        const end = new Date(endDate + "T23:59:59");
         const orgId = req.orgId;
+
         if (!startDate || !endDate) {
             return res.status(400).json({ message: "Start and End dates required" });
         }
+
+        const start = new Date(startDate + "T00:00:00");
+        const end = new Date(endDate + "T23:59:59");
 
         const records = await Attendance.find({
             organizationId: orgId,
@@ -289,8 +299,8 @@ exports.getPerformance = async (req, res) => {
         });
         let totalDays = 0;
 
-        let current = new Date(startDate + "T00:00:00");
-        let last = new Date(endDate + "T00:00:00");
+        let current = new Date(start);
+        let last = new Date(end);
 
         while (current <= last) {
 
@@ -317,20 +327,21 @@ exports.getPerformance = async (req, res) => {
 
         const result = users.map(u => {
 
-            const id = u.userId._id.toString();
+            const id = u.userId._id?.toString();
             const present = performance[id]?.present || 0;
-            const late = performance[id]?.late || 0
+            const late = performance[id]?.late || 0;
+
+            const percentage = totalDays === 0 ? 0 :
+                Number(((present / totalDays) * 100).toFixed(2));
 
             return {
-                name: u.userId.name,
-                email: u.userId.email,
+                name: u.userId?.name || "Unknown",
+                email: u.userId?.email || "",
                 role: u.role,
                 presentDays: present,
                 totalDays,
                 lateEntries: late,
-                percentage: totalDays === 0
-                    ? "0.00"
-                    : ((present / totalDays) * 100).toFixed(2)
+                percentage
             };
         });
 

@@ -39,15 +39,22 @@ exports.uploadAttendance = async (req, res) => {
                         continue
                     }
                     const status = calculateStatus(row.inTime, row.outTime)
-                    await Attendance.create({
-                        userId: user._id,
-                        organizationId: req.orgId,
-                        date: new Date(row.date),
-                        status,
-                        markedBy: req.user.id,
-                        inTime: row.inTime,
-                        outTime: row.outTime
-                    });
+                    await Attendance.updateOne(
+                        {
+                            userId: user._id,
+                            organizationId: req.orgId,
+                            date: new Date(row.date)
+                        },
+                        {
+                            $set: {
+                                status,
+                                markedBy: req.user.id,
+                                inTime: row.inTime,
+                                outTime: row.outTime
+                            }
+                        },
+                        { upsert: true }
+                    );
                     success++;
                 }
                 res.status(201).json({ message: "Attendance Processed!", success, skipped })

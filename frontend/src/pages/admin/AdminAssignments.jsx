@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import instance from "../../api/axiosApi.js";
 import Navbar from "../../components/Navbar.jsx";
+import { toast } from "react-toastify";
 
 function AdminAssignments() {
 
@@ -55,7 +56,7 @@ function AdminAssignments() {
   const handleSubmit = async () => {
 
     if (!selectedManager) {
-      alert("Select a manager first");
+      toast.error("Select a manager first");
       return;
     }
 
@@ -73,7 +74,7 @@ function AdminAssignments() {
       members: finalMembers
     });
 
-    alert("Members Assigned");
+   toast.success("Members Assigned");
 
     setSelectedManager("");
     setSelectedMembers([]);
@@ -90,13 +91,13 @@ function AdminAssignments() {
         userId
       });
 
-      alert("Role Updated");
+      toast.success("Role Updated");
 
       fetchData();
 
     } catch (error) {
 
-      alert(error.response?.data?.message);
+      toast.error(error.response?.data?.message);
 
     }
 
@@ -112,7 +113,7 @@ function AdminAssignments() {
 
         {/* Page Title */}
 
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+        <h1 className="text-2xl md:text-3xl font-bold mt-18 md:mt-0 text-gray-800">
           Team Management
         </h1>
 

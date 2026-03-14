@@ -20,6 +20,7 @@ function Navbar() {
       { path: "/assignments", label: "Team Management" },
       { path: "/team-attendance", label: "Team Attendance" },
       { path: "/editrecords", label: "Edit Records" },
+      { path: "/dashboard", label: "Home Page" }
     ],
 
     manager: [
@@ -28,11 +29,13 @@ function Navbar() {
       { path: "/team-attendance", label: "Team Attendance" },
       { path: "/self-attendance", label: "My Attendance" },
       { path: "/editrecords", label: "Edit Records" },
+      { path: "/dashboard", label: "Home Page" }
     ],
 
     member: [
       { path: "/member", label: "Dashboard" },
       { path: "/self-attendance", label: "My Attendance" },
+      { path: "/dashboard", label: "Home Page" }
     ]
   };
 
@@ -61,7 +64,9 @@ function Navbar() {
     <>
       {/* MOBILE TOPBAR */}
       <div className="md:hidden flex items-center justify-between p-4 bg-white border-b fixed w-full z-40">
-
+        <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold">
+          A
+        </div>
         <h1 className="text-lg font-bold text-purple-600">
           AttendPro
         </h1>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import instance from "../../api/axiosApi";
 import Navbar from "../../components/Navbar";
+import { toast } from "react-toastify";
 
 function AdminAttendance() {
 
@@ -14,17 +15,25 @@ function AdminAttendance() {
 
         const fetchMembers = async () => {
 
-            const res = await instance.get("/attendance/members");
+            try {
 
-            setMembers(res.data.members);
+                const res = await instance.get("/attendance/members");
 
-            const defaultAttendance = {};
+                setMembers(res.data.members);
 
-            res.data.members.forEach(m => {
-                defaultAttendance[m.userId._id] = "absent";
-            });
+                const defaultAttendance = {};
 
-            setAttendance(defaultAttendance);
+                res.data.members.forEach(m => {
+                    defaultAttendance[m.userId._id] = "absent";
+                });
+
+                setAttendance(defaultAttendance);
+
+            } catch (error) {
+
+                console.error(error);
+
+            }
 
         };
 
@@ -41,6 +50,15 @@ function AdminAttendance() {
 
     };
 
+    const toggleLeave = (id) => {
+
+        setAttendance(prev => ({
+            ...prev,
+            [id]: prev[id] === "leave" ? "absent" : "leave"
+        }));
+
+    };
+
     const handleSubmit = async () => {
 
         try {
@@ -48,7 +66,7 @@ function AdminAttendance() {
             const today = new Date().toISOString().split("T")[0];
 
             if (attendanceDate > today) {
-                alert("Date cannot be in the future");
+                toast.error("Hold on! The day is yet to come.");
                 return;
             }
 
@@ -62,11 +80,12 @@ function AdminAttendance() {
                 date: attendanceDate
             });
 
-            alert("Attendance Submitted");
+            toast.success("Attendance Submitted");
 
         } catch (err) {
 
             console.log(err);
+            toast.error("Failed to submit attendance");
 
         }
 
@@ -74,40 +93,64 @@ function AdminAttendance() {
 
     const uploadCSV = async () => {
 
-        if (!file) {
-            alert("Please select a CSV file");
-            return;
+        try {
+
+            if (!file) {
+                toast.error("Please select a CSV file");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const res = await instance.post(
+                "/attendance/upload",
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data"
+                    }
+                }
+            );
+
+            setResult(res.data);
+
+            toast.success("CSV uploaded successfully");
+
+        } catch (error) {
+
+            console.error(error);
+            toast.error("CSV upload failed");
+
         }
-
-        const formData = new FormData();
-        formData.append("file", file);
-
-        const res = await instance.post(
-            "/attendance/upload",
-            formData,
-            { headers: { "Content-Type": "multipart/form-data" } }
-        );
-
-        setResult(res.data);
 
     };
 
     const downloadAttendance = async () => {
 
-        const res = await instance.get(
-            "/attendance/download",
-            { responseType: "blob" }
-        );
+        try {
 
-        const url = window.URL.createObjectURL(new Blob([res.data]));
+            const res = await instance.get(
+                "/attendance/download",
+                { responseType: "blob" }
+            );
 
-        const link = document.createElement("a");
+            const url = window.URL.createObjectURL(new Blob([res.data]));
 
-        link.href = url;
-        link.setAttribute("download", "attendance-report.csv");
+            const link = document.createElement("a");
 
-        document.body.appendChild(link);
-        link.click();
+            link.href = url;
+            link.setAttribute("download", "attendance-report.csv");
+
+            document.body.appendChild(link);
+            link.click();
+
+        } catch (error) {
+
+            console.error(error);
+            toast.error("Download failed");
+
+        }
 
     };
 
@@ -119,21 +162,17 @@ function AdminAttendance() {
 
             <div className="flex-1 md:ml-64 p-4 md:p-8">
 
-                {/* HEADER */}
-
                 <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
 
-                    <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+                    <h1 className="text-2xl mt-18 md:mt-0 md:text-3xl font-bold text-gray-800">
                         Attendance Management
                     </h1>
 
                 </div>
 
-                {/* ACTION TOOLS */}
+                {/* CSV Upload + Download */}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-
-                    {/* Upload CSV */}
 
                     <div className="bg-white p-5 md:p-6 rounded-xl shadow">
 
@@ -161,9 +200,6 @@ function AdminAttendance() {
 
                     </div>
 
-
-                    {/* Download */}
-
                     <div className="bg-white p-5 md:p-6 rounded-xl shadow">
 
                         <h3 className="font-semibold mb-3">
@@ -181,8 +217,7 @@ function AdminAttendance() {
 
                 </div>
 
-
-                {/* TABLE */}
+                {/* Attendance Table */}
 
                 <div className="bg-white rounded-xl shadow overflow-hidden">
 
@@ -216,19 +251,10 @@ function AdminAttendance() {
                             <thead className="bg-gray-100">
 
                                 <tr>
-
-                                    <th className="p-4 text-left">
-                                        Member
-                                    </th>
-
-                                    <th className="p-4 text-left">
-                                        Role
-                                    </th>
-
-                                    <th className="p-4 text-left">
-                                        Status
-                                    </th>
-
+                                    <th className="p-4 text-left">Member</th>
+                                    <th className="p-4 text-left">Role</th>
+                                    <th className="p-4 text-left">Status</th>
+                                    <th className="p-4 text-left">Leave</th>
                                 </tr>
 
                             </thead>
@@ -241,10 +267,7 @@ function AdminAttendance() {
 
                                     return (
 
-                                        <tr
-                                            key={m.userId._id}
-                                            className="border-b"
-                                        >
+                                        <tr key={m.userId._id} className="border-b">
 
                                             <td className="p-4">
                                                 {m.userId.name}
@@ -257,20 +280,30 @@ function AdminAttendance() {
                                             <td className="p-4">
 
                                                 <button
-                                                    onClick={() =>
-                                                        toggleAttendance(m.userId._id)
-                                                    }
+                                                    onClick={() => toggleAttendance(m.userId._id)}
+                                                    disabled={status === "leave"}
                                                     className={`px-4 py-1 rounded-full text-sm font-semibold
                                                     ${status === "present"
                                                             ? "bg-green-100 text-green-700"
                                                             : "bg-red-100 text-red-700"
                                                         }`}
                                                 >
+                                                    {status === "present" ? "Present" : "Absent"}
+                                                </button>
 
-                                                    {status === "present"
-                                                        ? "Present"
-                                                        : "Absent"}
+                                            </td>
 
+                                            <td className="p-4">
+
+                                                <button
+                                                    onClick={() => toggleLeave(m.userId._id)}
+                                                    className={`px-4 py-1 rounded-full text-sm font-semibold
+                                                    ${status === "leave"
+                                                            ? "bg-yellow-100 text-yellow-700"
+                                                            : "bg-gray-100 text-gray-600"
+                                                        }`}
+                                                >
+                                                    {status === "leave" ? "Yes" : "No"}
                                                 </button>
 
                                             </td>
@@ -288,9 +321,6 @@ function AdminAttendance() {
                     </div>
 
                 </div>
-
-
-                {/* SUBMIT */}
 
                 <div className="mt-8">
 

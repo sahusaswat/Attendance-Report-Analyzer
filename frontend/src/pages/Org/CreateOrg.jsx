@@ -29,24 +29,33 @@ function CreateOrg() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex flex-col items-center justify-center px-4">
 
-      {/* Heading */}
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold text-gray-800">
-          Create Your Organization
-        </h1>
+      {/* SaaS Logo + Name */}
 
-        <p className="text-gray-600 mt-2">
-          Manage attendance easily and monitor everything in one place.
-        </p>
+      <div className="flex items-center gap-3 mb-6 sm:mb-8">
+
+        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-lg">
+          A
+        </div>
+
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
+            AttendPro
+          </h1>
+          <p className="text-xs sm:text-sm text-gray-500">
+            Attendance Management SaaS
+          </p>
+        </div>
+
       </div>
 
       {/* Card */}
-      <div className="bg-white shadow-xl rounded-xl p-8 w-full max-w-md">
 
-        <h2 className="text-2xl font-semibold text-center mb-6">
-          Organization Setup
+      <div className="bg-white shadow-xl rounded-xl p-6 sm:p-8 w-full max-w-md">
+
+        <h2 className="text-xl sm:text-2xl font-semibold text-center mb-5 sm:mb-6">
+          Create Organization
         </h2>
 
         <form onSubmit={handleCreate} className="space-y-4">
@@ -57,12 +66,12 @@ function CreateOrg() {
             placeholder="Organization Name"
             value={name}
             onChange={(e) => setname(e.target.value)}
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full p-3 border rounded-lg text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
           <button
             type="submit"
-            className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition"
+            className="w-full bg-blue-600 text-white py-2.5 rounded-lg hover:bg-blue-700 transition text-sm sm:text-base"
           >
             Create Organization
           </button>
@@ -70,17 +79,20 @@ function CreateOrg() {
         </form>
 
         {/* Divider */}
+
         <div className="my-6 border-t"></div>
 
-        {/* Dashboard Redirect */}
+        {/* Dashboard Link */}
+
         <Link
-          to="/dashboardredirect"
-          className="block text-center text-purple-600 font-medium hover:underline"
+          to="/dashboard"
+          className="block text-center text-blue-600 font-medium text-sm sm:text-base hover:underline"
         >
           Go to Dashboard
         </Link>
 
       </div>
+
     </div>
   );
 }

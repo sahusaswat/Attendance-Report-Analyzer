@@ -13,6 +13,7 @@ function EditRecords() {
     const [status, setStatus] = useState("");
     const [date, setDate] = useState("");
     const [loading, setLoading] = useState(false);
+
     const { user } = useAuth();
     const navigate = useNavigate();
 
@@ -23,13 +24,16 @@ function EditRecords() {
         }
     }, [user]);
 
-
     const fetchAttendance = async () => {
+
         if (!date) {
-            return toast.error("Please select a date!")
+            return toast.error("Please select a date!");
         }
+
         try {
-            setLoading(true)
+
+            setLoading(true);
+
             const res = await instance.get("/attendance/date", {
                 params: { date }
             });
@@ -41,7 +45,9 @@ function EditRecords() {
             console.log("Error fetching attendance:", error);
 
         } finally {
+
             setLoading(false);
+
         }
     };
 
@@ -72,7 +78,6 @@ function EditRecords() {
             toast.error("Update failed");
 
         }
-
     };
 
     const deleteAttendance = async (id) => {
@@ -92,33 +97,33 @@ function EditRecords() {
             toast.error("Delete failed");
 
         }
-
     };
 
     return (
+
         <>
             <Navbar />
 
-            <div className="ml-64 p-10 min-h-screen bg-gray-100">
+            <div className="md:ml-64 p-4 md:p-10 min-h-screen bg-gray-100">
 
-                <h1 className="text-3xl font-bold text-gray-700 mb-8">
+                <h1 className="text-2xl md:text-3xl mt-18 md:mt-0 font-bold text-gray-700 mb-6 ">
                     Manage Attendance
                 </h1>
 
-                {/* Date Filter */}
+                {/* Filter Section */}
 
-                <div className="flex gap-4 mb-6">
+                <div className="flex flex-col md:flex-row gap-6 mb-6 items-center justify-start">
 
                     <input
                         type="date"
                         value={date}
                         onChange={(e) => setDate(e.target.value)}
-                        className="border p-2 rounded"
+                        className="border p-2 rounded w-full md:w-auto"
                     />
 
                     <button
                         onClick={fetchAttendance}
-                        className="bg-blue-600 text-white px-4 py-2 rounded"
+                        className="bg-blue-600 text-white px-4 py-2 rounded w-full md:w-auto"
                     >
                         Load Attendance
                     </button>
@@ -127,9 +132,9 @@ function EditRecords() {
 
                 {/* Table */}
 
-                <div className="bg-white shadow rounded-lg overflow-hidden">
+                <div className="bg-white shadow rounded-lg overflow-x-auto">
 
-                    <table className="w-full">
+                    <table className="min-w-full">
 
                         <thead className="bg-gray-200 text-left">
 
@@ -146,7 +151,7 @@ function EditRecords() {
 
                             {loading && (
                                 <tr>
-                                    <td className="p-4" colSpan="4">
+                                    <td className="p-4 text-center" colSpan="4">
                                         Loading...
                                     </td>
                                 </tr>
@@ -154,7 +159,7 @@ function EditRecords() {
 
                             {!loading && records.length === 0 && (
                                 <tr>
-                                    <td className="p-4 text-gray-500" colSpan="4">
+                                    <td className="p-4 text-gray-500 text-center" colSpan="4">
                                         No attendance records found
                                     </td>
                                 </tr>
@@ -179,21 +184,25 @@ function EditRecords() {
                                         {r.status}
                                     </td>
 
-                                    <td className="p-4 flex gap-4">
+                                    <td className="p-4">
 
-                                        <button
-                                            onClick={() => openEditModal(r)}
-                                            className="text-blue-600 hover:underline"
-                                        >
-                                            Edit
-                                        </button>
+                                        <div className="flex flex-col md:flex-row gap-2">
 
-                                        <button
-                                            onClick={() => deleteAttendance(r._id)}
-                                            className="text-red-600 hover:underline"
-                                        >
-                                            Delete
-                                        </button>
+                                            <button
+                                                onClick={() => openEditModal(r)}
+                                                className="text-blue-600 hover:underline"
+                                            >
+                                                Edit
+                                            </button>
+
+                                            <button
+                                                onClick={() => deleteAttendance(r._id)}
+                                                className="text-red-600 hover:underline"
+                                            >
+                                                Delete
+                                            </button>
+
+                                        </div>
 
                                     </td>
 
@@ -213,7 +222,7 @@ function EditRecords() {
 
                     <div className="fixed inset-0 flex items-center justify-center bg-black/40">
 
-                        <div className="bg-white p-6 rounded-lg w-96 shadow-lg">
+                        <div className="bg-white p-6 rounded-lg w-[90%] max-w-md shadow-lg">
 
                             <h2 className="text-lg font-semibold mb-4">
                                 Edit Attendance
@@ -256,6 +265,7 @@ function EditRecords() {
                 )}
 
             </div>
+
         </>
     );
 }

@@ -3,7 +3,6 @@ import { getTeamAttendance } from "../../api/attendanceApi";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "react-toastify";
 import Navbar from "../../components/Navbar";
-import instance from "../../api/axiosApi";
 
 function TeamAttendance() {
 
@@ -13,8 +12,6 @@ function TeamAttendance() {
     const [endDate, setEndDate] = useState("");
     const [loading, setLoading] = useState(false);
     const [attendance, setAttendance] = useState([]);
-    const [file, setFile] = useState(null);
-    const [result, setResult] = useState(null);
 
     if (!user?._id) return null;
 
@@ -44,59 +41,7 @@ function TeamAttendance() {
 
     };
 
-    const uploadCSV = async () => {
 
-        if (!file) {
-            alert("Please choose a file!");
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append("file", file);
-
-        try {
-
-            const res = await instance.post("/attendance/upload", formData, {
-                headers: { "Content-Type": "multipart/form-data" }
-            });
-
-            setResult(res.data);
-
-            alert("CSV uploaded successfully!");
-
-        } catch (error) {
-
-            alert("Upload Failed");
-
-        }
-
-    };
-
-    const downloadAttendance = async () => {
-
-        try {
-
-            const res = await instance.get("/attendance/download", {
-                responseType: "blob"
-            });
-
-            const url = window.URL.createObjectURL(new Blob([res.data]));
-
-            const link = document.createElement("a");
-
-            link.href = url;
-            link.setAttribute("download", "attendance-report.csv");
-
-            document.body.appendChild(link);
-            link.click();
-
-        } catch (error) {
-
-            toast.error("Download failed");
-
-        }
-
-    };
 
     return (
 
@@ -110,29 +55,20 @@ function TeamAttendance() {
 
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
 
-                    <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+                    <h1 className="text-2xl md:text-3xl font-bold mt-18 md:mt-0 text-gray-800">
                         Team Attendance
                     </h1>
-
-                    <button
-                        onClick={downloadAttendance}
-                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium w-full md:w-auto"
-                    >
-                        Download CSV
-                    </button>
-
                 </div>
-
 
                 {/* Filters */}
 
-                <div className="bg-white shadow rounded-xl p-5">
+                <div className="bg-white shadow rounded-xl p-4">
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                    <div className="flex flex-col sm:flex-row sm:items-end gap-4">
 
-                        <div>
-
-                            <label className="block text-sm text-gray-500 mb-1">
+                        {/* Start Date */}
+                        <div className="flex flex-col w-48">
+                            <label className="text-xs text-gray-500 mb-1">
                                 Start Date
                             </label>
 
@@ -140,14 +76,13 @@ function TeamAttendance() {
                                 type="date"
                                 value={startDate}
                                 onChange={(e) => setStartDate(e.target.value)}
-                                className="border rounded-lg px-3 py-2 w-full"
+                                className="border rounded-md px-2 py-1.5 text-sm"
                             />
-
                         </div>
 
-                        <div>
-
-                            <label className="block text-sm text-gray-500 mb-1">
+                        {/* End Date */}
+                        <div className="flex flex-col w-48">
+                            <label className="text-xs text-gray-500 mb-1">
                                 End Date
                             </label>
 
@@ -155,45 +90,26 @@ function TeamAttendance() {
                                 type="date"
                                 value={endDate}
                                 onChange={(e) => setEndDate(e.target.value)}
-                                className="border rounded-lg px-3 py-2 w-full"
+                                className="border rounded-md px-2 py-1.5 text-sm"
                             />
-
                         </div>
 
+                        {/* Button */}
                         <button
                             onClick={fetchAttendance}
                             disabled={loading}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium w-full"
+                            className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-md font-medium h-9"
                         >
-                            {loading ? "Loading..." : "Generate Report"}
+                            {loading ? "Loading..." : "Generate"}
                         </button>
-
-                        <div className="flex flex-col sm:flex-row gap-2">
-
-                            <input
-                                type="file"
-                                accept=".csv"
-                                onChange={(e) => setFile(e.target.files[0])}
-                                className="border rounded-lg px-3 py-2 w-full"
-                            />
-
-                            <button
-                                onClick={uploadCSV}
-                                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg w-full sm:w-auto"
-                            >
-                                Upload
-                            </button>
-
-                        </div>
 
                     </div>
 
                 </div>
 
+                {/* DESKTOP TABLE */}
 
-                {/* Attendance Table */}
-
-                <div className="bg-white shadow rounded-xl overflow-hidden">
+                <div className="hidden md:block bg-white shadow rounded-xl overflow-hidden">
 
                     <div className="p-4 border-b flex justify-between items-center">
 
@@ -226,78 +142,28 @@ function TeamAttendance() {
 
                             <tbody>
 
-                                {attendance.length === 0 && !loading && (
-
-                                    <tr>
-
-                                        <td
-                                            colSpan="6"
-                                            className="text-center py-10 text-gray-400"
-                                        >
-                                            No attendance records found
-                                        </td>
-
-                                    </tr>
-
-                                )}
-
                                 {attendance.map((record) => (
 
-                                    <tr
-                                        key={record._id}
-                                        className="border-t hover:bg-gray-50"
-                                    >
+                                    <tr key={record._id} className="border-t">
 
                                         <td className="px-4 py-3">
                                             {new Date(record.date).toLocaleDateString("en-GB")}
                                         </td>
 
-                                        <td className="px-4 py-3 font-medium text-gray-700">
+                                        <td className="px-4 py-3 font-medium">
                                             {record.userId?.name || "Unknown"}
                                         </td>
 
+                                        <td className="px-4 py-3">{record.inTime || "-"}</td>
+
+                                        <td className="px-4 py-3">{record.outTime || "-"}</td>
+
                                         <td className="px-4 py-3">
-                                            {record.inTime || "-"}
+                                            {record.lateStatus ? "Late" : "On Time"}
                                         </td>
 
                                         <td className="px-4 py-3">
-                                            {record.outTime || "-"}
-                                        </td>
-
-                                        <td className="px-4 py-3">
-
-                                            <span
-                                                className={`px-3 py-1 text-xs rounded-full
-                        ${record.status === "present" && record.lateStatus
-                                                        ? "bg-red-100 text-red-700"
-                                                        : record.status === "present"
-                                                            ? "bg-green-100 text-green-700"
-                                                            : "bg-gray-100 text-gray-700"
-                                                    }`}
-                                            >
-
-                                                {record.status === "present"
-                                                    ? record.lateStatus
-                                                        ? "Late"
-                                                        : "On Time"
-                                                    : record.status}
-
-                                            </span>
-
-                                        </td>
-
-                                        <td className="px-4 py-3">
-
-                                            <span
-                                                className={`px-3 py-1 rounded-full text-xs
-                        ${record.status === "present"
-                                                        ? "bg-green-100 text-green-700"
-                                                        : "bg-red-100 text-red-700"
-                                                    }`}
-                                            >
-                                                {record.status}
-                                            </span>
-
+                                            {record.status}
                                         </td>
 
                                     </tr>
@@ -309,6 +175,75 @@ function TeamAttendance() {
                         </table>
 
                     </div>
+
+                </div>
+
+                {/* MOBILE CARDS */}
+
+                <div className="md:hidden space-y-4">
+
+                    {attendance.length === 0 && !loading && (
+
+                        <div className="text-center text-gray-400">
+                            No attendance records found
+                        </div>
+
+                    )}
+
+                    {attendance.map((record) => (
+
+                        <div
+                            key={record._id}
+                            className="bg-white shadow rounded-xl p-4 space-y-2"
+                        >
+
+                            <div className="flex justify-between">
+
+                                <span className="font-medium">
+                                    {record.userId?.name || "Unknown"}
+                                </span>
+
+                                <span className="text-sm text-gray-500">
+                                    {new Date(record.date).toLocaleDateString("en-GB")}
+                                </span>
+
+                            </div>
+
+                            <div className="text-sm text-gray-600">
+                                In: {record.inTime || "-"}
+                            </div>
+
+                            <div className="text-sm text-gray-600">
+                                Out: {record.outTime || "-"}
+                            </div>
+
+                            <div className="flex justify-between">
+
+                                <span
+                                    className={`text-xs px-2 py-1 rounded-full
+                                    ${record.lateStatus
+                                            ? "bg-red-100 text-red-700"
+                                            : "bg-green-100 text-green-700"
+                                        }`}
+                                >
+                                    {record.lateStatus ? "Late" : "On Time"}
+                                </span>
+
+                                <span
+                                    className={`text-xs px-2 py-1 rounded-full
+                                    ${record.status === "present"
+                                            ? "bg-green-100 text-green-700"
+                                            : "bg-red-100 text-red-700"
+                                        }`}
+                                >
+                                    {record.status}
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    ))}
 
                 </div>
 
