@@ -14,7 +14,17 @@ const LogoutButton = () => {
   return (
     <button
       onClick={handleLogout}
-      className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 hover:shadow-md transition-all duration-200 cursor-pointer"
+      className="
+      w-full sm:w-auto
+      flex items-center justify-center gap-2
+      px-5 py-3
+      text-sm sm:text-base
+      bg-blue-500 text-white
+      rounded-lg shadow
+      hover:bg-blue-600 hover:shadow-md
+      transition-all duration-200
+      cursor-pointer
+      "
     >
       Logout
     </button>

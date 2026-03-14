@@ -4,112 +4,153 @@ import instance from "../../api/axiosApi.js";
 import { Eye, EyeOff } from "lucide-react";
 
 function Signup() {
-  const [email, setemail] = useState("");
-  const [password, setpassword] = useState("");
-  const [showpassword, setshowpassword] = useState(false)
-  const [name, setname] = useState("");
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
+
+      setLoading(true);
+      setError("");
+
       const res = await instance.post("/auth/register", {
         name,
         email,
         password
-      }); 
+      });
 
-      alert(res.data.message);
+      navigate("/verify-code", { state: { email } });
 
-      navigate("/verify-code", {state:{email}});
+    } catch (err) {
 
-    } catch (error) {
-      alert(error.response?.data?.message || "Signup Failed!");
+      setError(err.response?.data?.message || "Signup Failed");
+
+    } finally {
+
+      setLoading(false);
+
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4 sm:px-6">
 
-      {/* Page Heading */}
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold text-gray-800">
-          Create Your Account
-        </h1>
+      <div className="w-full max-w-md">
 
-        <p className="text-gray-600 mt-2">
-          Start managing your organization in minutes.
-        </p>
+        {/* SaaS Branding */}
+        <div className="text-center mb-8">
+
+          <h1 className="text-4xl font-bold text-blue-600">
+            AttendPro
+          </h1>
+
+          <p className="text-gray-600 mt-2 text-sm sm:text-base">
+            Smart Attendance & Workforce Insights
+          </p>
+
+        </div>
+
+        {/* Card */}
+        <div className="bg-white shadow-xl rounded-xl p-6 sm:p-8">
+
+          <h2 className="text-2xl font-semibold text-center mb-6">
+            Create your account
+          </h2>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+
+            {/* Name */}
+            <input
+              type="text"
+              placeholder="Full Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+            />
+
+            {/* Email */}
+            <input
+              type="email"
+              placeholder="Email Address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+            />
+
+            {/* Password */}
+            <div className="relative">
+
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10 text-sm sm:text-base"
+              />
+
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+
+            </div>
+
+            {/* Error */}
+            {error && (
+              <p className="text-red-500 text-sm text-center">
+                {error}
+              </p>
+            )}
+
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={loading}
+              className={`w-full py-2.5 rounded-lg font-medium transition
+                ${loading
+                  ? "bg-blue-300 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700 text-white"
+                }`}
+            >
+              {loading ? "Creating account..." : "Create Account"}
+            </button>
+
+          </form>
+
+          {/* Divider */}
+          <div className="my-6 border-t"></div>
+
+          {/* Login link */}
+          <p className="text-center text-gray-600 text-sm sm:text-base">
+            Already have an account?{" "}
+            <Link
+              to="/login"
+              className="text-blue-600 font-medium hover:underline"
+            >
+              Login
+            </Link>
+          </p>
+
+        </div>
+
       </div>
 
-      {/* Card */}
-      <div className="bg-white shadow-xl rounded-xl p-8 w-full max-w-md">
-
-        <h2 className="text-2xl font-semibold text-center mb-6">
-          Sign Up
-        </h2>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-
-          <input
-            type="text"
-            placeholder="Full Name"
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={name}
-            onChange={(e) => setname(e.target.value)}
-            required
-          />
-
-          <input
-            type="email"
-            placeholder="Email Address"
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={email}
-            onChange={(e) => setemail(e.target.value)}
-            required
-          />
-
-          <input
-            type={showpassword ? "text" : "password"}
-            placeholder="Password"
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={password}
-            onChange={(e) => setpassword(e.target.value)}
-            required
-          />
-
-           <button
-            type="button"
-            className="fixed top-112 right-147 -translate-y-1/2 curosr-pointer text-gray-400"
-            onClick={() => setshowpassword(!showpassword)}>
-            {showpassword ? <EyeOff size={18} /> : <Eye size={18} />}
-          </button>
-
-          <button
-            type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
-          >
-            Create Account
-          </button>
-
-        </form>
-
-        {/* Divider */}
-        <div className="my-6 border-t"></div>
-
-        {/* Login Link */}
-        <p className="text-center text-gray-600">
-          Already have an account?{" "}
-          <Link
-            to="/login"
-            className="text-blue-600 font-medium hover:underline"
-          >
-            Login
-          </Link>
-        </p>
-
-      </div>
     </div>
   );
 }

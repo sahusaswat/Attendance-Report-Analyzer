@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
 import instance from "../../api/axiosApi";
 import { toast } from "react-toastify";
+import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 function EditRecords() {
 
@@ -10,7 +12,16 @@ function EditRecords() {
     const [selectedAttendance, setSelectedAttendance] = useState(null);
     const [status, setStatus] = useState("");
     const [date, setDate] = useState("");
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(false);
+    const { user } = useAuth();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (user?.role === "member") {
+            toast.error("Access denied");
+            navigate("/dashboard");
+        }
+    }, [user]);
 
 
     const fetchAttendance = async () => {

@@ -11,8 +11,8 @@ import {
   Cell,
   Tooltip,
   ResponsiveContainer,
-  BarChart,
-  Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid
@@ -28,82 +28,89 @@ function AdminDashboard() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  const COLORS = ["#16a34a", "#facc15", "#ef4444"];
-
+  const COLORS = ["#01b242", "#facc15", "#e41b1b"];
 
   const fetchStatsToday = async () => {
     try {
       const res = await instance.get("/admin/dashboard-todaystats");
-      console.log("TODAY RESPONSE:", res.data);
       setTodayStats(res.data);
     } catch (error) {
-      console.error("Dashboard today error:", error);
+      console.error(error);
     }
   };
 
-
-  const fetchStatsAnalytics = async () => {
+  const fetchStatsAnalytics = async (start = startDate, end = endDate) => {
     try {
+
       const res = await instance.get("/admin/dashboard-analytics-stats", {
         params: {
-          startDate,
-          endDate
+          startDate: start,
+          endDate: end
         }
       });
-      console.log("ANALYTICS RESPONSE:", res.data);
+
       setAnalytics(res.data);
 
     } catch (error) {
-      console.error("Analytics error:", error);
+      console.error(error);
     }
   };
 
   useEffect(() => {
+
+    const today = new Date();
+    const past = new Date();
+
+    past.setDate(today.getDate() - 30);
+
+    const start = past.toISOString().split("T")[0];
+    const end = today.toISOString().split("T")[0];
+
+    setStartDate(start);
+    setEndDate(end);
+
     fetchStatsToday();
-    fetchStatsAnalytics();
+    fetchStatsAnalytics(start, end);
+
   }, []);
 
   if (!ready || !todaystats || !analytics) {
     return <Loader />;
   }
-  const topPerformers = analytics?.topPerformers || [];
-  const lowPerformers = analytics?.lowPerformers || [];
 
+  const attendancePercentage = analytics?.attendancePercentage || 0;
 
   const attendanceData = [
-    { name: "Present", value: analytics?.present || 0 },
-    { name: "Leave", value: analytics?.leave || 0 },
-    { name: "Absent", value: analytics?.absent || 0 }
+    { name: "Present", value: Number(analytics?.attendancePercentage) || 0 },
+    { name: "Leave", value: Number(analytics?.leavePercentage) || 0 },
+    { name: "Absent", value: Number(analytics?.absentPercentage) || 0 }
   ];
-  const performanceData = [
-    ...topPerformers.map(emp => ({
-      name: emp.name,
-      days: emp.presentDays
-    })),
-    ...lowPerformers.map(emp => ({
-      name: emp.name,
-      days: emp.presentDays
-    }))
-  ];
+
+  const trendData =
+    analytics?.trend?.map((item) => ({
+      ...item,
+      date: new Date(item.date).toLocaleDateString("en-GB")
+    })) || [];
 
   return (
-    <>
+    <div className="flex">
+
       <Navbar />
 
-      <div className="ml-64 p-10 bg-gray-100 min-h-screen">
+      <div className="flex-1 md:ml-64 p-4 md:p-8 bg-gray-100 min-h-screen">
 
-        {/* Header */}
+        {/* HEADER */}
 
-        <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white p-6 rounded-lg shadow flex justify-between items-center mb-8">
+        <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white p-6 rounded-lg shadow flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
 
           <div>
-            <h1 className="text-3xl font-bold">{user?.orgName}</h1>
-            <p className="mt-2">
+            <h1 className="text-2xl md:text-3xl font-bold">{user?.orgName}</h1>
+            <p className="mt-1">
               Code: <span className="font-semibold">{user?.orgCode}</span>
             </p>
           </div>
 
-          <div className="text-right">
+          <div className="md:text-right">
             <p className="font-semibold text-lg">{user?.name}</p>
             <p className="capitalize">{user?.role}</p>
             <div className="mt-2">
@@ -113,70 +120,84 @@ function AdminDashboard() {
 
         </div>
 
-        {/* Filters */}
+        {/* STATS */}
 
-        <div className="bg-white p-4 rounded-lg shadow flex gap-4 items-center mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+
+          <div className="bg-white p-5 rounded-lg shadow">
+            <h3 className="text-gray-500 text-sm">Today's Attendance</h3>
+            <p className="text-2xl md:text-3xl font-bold text-green-600">
+              {todaystats?.totalPresent} / {todaystats?.totalWorkers}
+            </p>
+          </div>
+
+          <div className="bg-white p-5 rounded-lg shadow">
+            <h3 className="text-gray-500 text-sm">Absent</h3>
+            <p className="text-2xl md:text-3xl font-bold text-red-600">
+              {todaystats?.absentCount}
+            </p>
+          </div>
+
+          <div className="bg-white p-5 rounded-lg shadow">
+            <h3 className="text-gray-500 text-sm">On Leave</h3>
+            <p className="text-2xl md:text-3xl font-bold text-yellow-500">
+              {todaystats?.leaveCount}
+            </p>
+          </div>
+
+          <div className="bg-white p-5 rounded-lg shadow">
+            <h3 className="text-gray-500 text-sm">Total Workforce</h3>
+            <p className="text-2xl md:text-3xl font-bold text-blue-600">
+              {todaystats?.totalWorkers}
+            </p>
+          </div>
+
+          <div className="bg-white p-5 rounded-lg shadow">
+            <h3 className="text-gray-500 text-sm">Attendance Rate</h3>
+            <p className="text-2xl md:text-3xl font-bold text-blue-600">
+              {attendancePercentage}%
+            </p>
+          </div>
+
+        </div>
+
+        {/* FILTER */}
+
+        <div className="bg-white p-4 rounded-lg shadow flex flex-col sm:flex-row gap-3 sm:items-center mb-8">
 
           <input
             type="date"
             value={startDate}
-            onChange={(e)=>setStartDate(e.target.value)}
-            className="border p-2 rounded"
+            onChange={(e) => setStartDate(e.target.value)}
+            className="border p-2 rounded w-full sm:w-auto"
           />
 
           <input
             type="date"
             value={endDate}
-            onChange={(e)=>setEndDate(e.target.value)}
-            className="border p-2 rounded"
+            onChange={(e) => setEndDate(e.target.value)}
+            className="border p-2 rounded w-full sm:w-auto"
           />
 
           <button
-            onClick={fetchStatsAnalytics}
-            className="bg-blue-600 text-white px-4 py-2 rounded"
+            onClick={() => fetchStatsAnalytics(startDate, endDate)}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full sm:w-auto"
           >
             Apply Filter
           </button>
 
         </div>
 
-        {/* Stats Cards */}
+        {/* CHARTS */}
 
-        <div className="grid grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-gray-500">Today's Attendance</h3>
-            <p className="text-3xl font-bold text-green-600">
-              {todaystats?.totalPresent} / {todaystats?.totalWorkers}
-            </p>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-gray-500">On Leave</h3>
-            <p className="text-3xl font-bold text-yellow-500">
-              {todaystats?.leaveCount}
-            </p>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-gray-500">Total Workforce</h3>
-            <p className="text-3xl font-bold text-blue-600">
-              {todaystats?.totalWorkers}
-            </p>
-          </div>
-
-        </div>
-
-        {/* Graphs */}
-
-        <div className="grid grid-cols-2 gap-6 mb-8">
-
-          {/* Pie Chart */}
+          {/* PIE CHART */}
 
           <div className="bg-white p-6 rounded-lg shadow">
 
-            <h2 className="text-xl font-semibold mb-4">
-              Attendance Overview
+            <h2 className="text-lg md:text-xl font-semibold mb-4">
+              Attendance Distribution
             </h2>
 
             <ResponsiveContainer width="100%" height={300}>
@@ -188,14 +209,14 @@ function AdminDashboard() {
                   dataKey="value"
                   nameKey="name"
                   outerRadius={100}
-                  label
+                  label={(entry) => `${entry.name} ${entry.value}%`}
                 >
-                  {attendanceData.map((entry,index)=>(
+                  {attendanceData.map((entry, index) => (
                     <Cell key={index} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
 
-                <Tooltip />
+                <Tooltip formatter={(value) => `${value}%`} />
 
               </PieChart>
 
@@ -203,29 +224,34 @@ function AdminDashboard() {
 
           </div>
 
-          {/* Bar Chart */}
+          {/* TREND CHART */}
 
           <div className="bg-white p-6 rounded-lg shadow">
 
-            <h2 className="text-xl font-semibold mb-4">
-              Employee Performance
+            <h2 className="text-lg md:text-xl font-semibold mb-4">
+              Attendance Trend
             </h2>
 
             <ResponsiveContainer width="100%" height={300}>
 
-              <BarChart data={performanceData}>
+              <LineChart data={trendData}>
 
                 <CartesianGrid strokeDasharray="3 3" />
 
-                <XAxis dataKey="name" />
+                <XAxis dataKey="date" />
 
-                <YAxis />
+                <YAxis domain={[0, 100]} />
 
                 <Tooltip />
 
-                <Bar dataKey="days" fill="#3b82f6" />
+                <Line
+                  type="monotone"
+                  dataKey="percentage"
+                  stroke="#3b82f6"
+                  strokeWidth={3}
+                />
 
-              </BarChart>
+              </LineChart>
 
             </ResponsiveContainer>
 
@@ -233,52 +259,9 @@ function AdminDashboard() {
 
         </div>
 
-        {/* Performer Lists */}
-
-        <div className="grid grid-cols-2 gap-6">
-
-          {/* Top Performers */}
-
-          <div className="bg-white p-6 rounded-lg shadow">
-
-            <h2 className="text-xl font-semibold mb-4">
-              Top Performers
-            </h2>
-
-            {topPerformers.map((emp,i)=>(
-              <div key={i} className="flex justify-between bg-green-100 p-3 rounded mb-2">
-                <span>{emp.name}</span>
-                <span className="font-semibold">
-                  {emp.presentDays} days
-                </span>
-              </div>
-            ))}
-
-          </div>
-
-          {/* Low Performers */}
-
-          <div className="bg-white p-6 rounded-lg shadow">
-
-            <h2 className="text-xl font-semibold mb-4">
-              Low Performers
-            </h2>
-
-            {lowPerformers.map((emp,i)=>(
-              <div key={i} className="flex justify-between bg-red-100 p-3 rounded mb-2">
-                <span>{emp.name}</span>
-                <span className="font-semibold">
-                  {emp.presentDays} days
-                </span>
-              </div>
-            ))}
-
-          </div>
-
-        </div>
-
       </div>
-    </>
+
+    </div>
   );
 }
 

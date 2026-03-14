@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import { Menu, X } from "lucide-react";
 
 function Navbar() {
   const navigate = useNavigate();
@@ -8,6 +9,8 @@ function Navbar() {
   const { user } = useAuth();
 
   const role = user?.role || "member";
+
+  const [open, setOpen] = useState(false);
 
   const menus = {
     admin: [
@@ -17,12 +20,6 @@ function Navbar() {
       { path: "/assignments", label: "Team Management" },
       { path: "/team-attendance", label: "Team Attendance" },
       { path: "/editrecords", label: "Edit Records" },
-      //   { path: "/", label: "Generate Payslip" },
-      //   { path: "/", label: "Notification" },
-      //   { path: "/", label: "Analyzer" },
-      //   { path: "/", label: "AI Bot" },
-      //   { path: "/", label: "Settings" },
-      //   { path: "/", label: "Feedback" }
     ],
 
     manager: [
@@ -30,24 +27,26 @@ function Navbar() {
       { path: "/attendance", label: "Attendance" },
       { path: "/team-attendance", label: "Team Attendance" },
       { path: "/self-attendance", label: "My Attendance" },
-      // { path: "/", label: "Notification" },
-      // { path: "/", label: "Feedback" }
+      { path: "/editrecords", label: "Edit Records" },
     ],
 
     member: [
       { path: "/member", label: "Dashboard" },
       { path: "/self-attendance", label: "My Attendance" },
-      // { path: "/", label: "My Performance" },
-      // { path: "/", label: "Feedback" }
     ]
-  }
+  };
+
   const navItem = (path, label) => {
     const active = location.pathname.startsWith(path);
 
     return (
       <button
-        onClick={() => navigate(path)}
-        className={`w-full text-left px-4 py-2 rounded-lg transition 
+        key={path}
+        onClick={() => {
+          navigate(path);
+          setOpen(false);
+        }}
+        className={`w-full text-left px-4 py-2 rounded-lg transition
         ${active
             ? "bg-violet-500 text-white"
             : "text-gray-700 hover:bg-purple-200"
@@ -59,23 +58,40 @@ function Navbar() {
   };
 
   return (
-    <div className="w-64 h-screen bg-white border-r shadow-sm fixed left-0 top-0 flex flex-col">
+    <>
+      {/* MOBILE TOPBAR */}
+      <div className="md:hidden flex items-center justify-between p-4 bg-white border-b fixed w-full z-40">
 
-      <div className="p-6 border-b">
-        <h1 className="text-xl font-bold text-purple-600">
+        <h1 className="text-lg font-bold text-purple-600">
           AttendPro
         </h1>
+
+        <button onClick={() => setOpen(!open)}>
+          {open ? <X /> : <Menu />}
+        </button>
+
       </div>
 
-      <div className="flex flex-col gap-2 p-4">
-        {menus[role].map((item) =>
-          <React.Fragment key={item.path + item.label}>
-            {navItem(item.path, item.label)}
-          </React.Fragment>
-        )}
-      </div>
+      {/* SIDEBAR */}
+      <div
+        className={`fixed top-0 left-0 h-full w-64 bg-white border-r shadow-sm transform
+        ${open ? "translate-x-0" : "-translate-x-full"}
+        md:translate-x-0
+        transition-transform duration-300 z-30`}
+      >
 
-    </div>
+        <div className="p-6 border-b hidden md:block">
+          <h1 className="text-xl font-bold text-purple-600">
+            AttendPro
+          </h1>
+        </div>
+
+        <div className="flex flex-col gap-2 p-4 mt-14 md:mt-0">
+          {menus[role].map((item) => navItem(item.path, item.label))}
+        </div>
+
+      </div>
+    </>
   );
 }
 

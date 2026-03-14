@@ -117,7 +117,14 @@ exports.getAttendanceByDate = async (req, res) => {
 
         if (req.role === "member") {
             filter.userId = req.user._id;
+        };
+
+        if (req.role === "manager") {
+            const manager = await User.findById(req.user._id);
+            const assigned = manager?.assignedUsers || [];
+            filter.userId = { $in: assigned };
         }
+
 
         const attendance = await Attendance.find(filter)
             .populate("userId", "name email role")
@@ -189,6 +196,7 @@ exports.getAttendanceByUser = async (req, res) => {
 };
 
 exports.getTeamAttendance = async (req, res) => {
+    console.log("TEAM ATTENDANCE ROUTE HIT");
 
     console.log(`REQ.USER: ${req.user}, REQ.ROLE:${req.role}, REQ.ORGID:${req.orgId}`)
     try {

@@ -1,5 +1,6 @@
 const Attendance = require("../models/Attendance.js");
-const Membership = require("../models/Membership.js")
+const Membership = require("../models/Membership.js");
+const mongoose = require("mongoose");
 
 exports.getTodayStats = async (req, res) => {
    try {
@@ -26,10 +27,13 @@ exports.getTodayStats = async (req, res) => {
          role: { $in: ["manager", "member"] }
       });
 
+      const absentCount = totalWorkers - totalPresent - leaveCount
+
       res.json({
          totalPresent,
          leaveCount,
-         totalWorkers
+         totalWorkers,
+         absentCount
       });
 
    } catch (error) {
@@ -38,116 +42,119 @@ exports.getTodayStats = async (req, res) => {
 };
 
 exports.getDashboardAnalytics = async (req, res) => {
+   try {
 
-   const { startDate, endDate } = req.query;
+      const { startDate, endDate } = req.query;
 
-   let match = {
-      organizationId: req.orgId
-   };
+      let match = {
+         organizationId: new mongoose.Types.ObjectId(req.orgId)
+      };
 
-   if (startDate || endDate) {
+      if (startDate || endDate) {
 
-      match.date = {};
+         match.date = {};
 
-      if (startDate) {
-         match.date.$gte = new Date(startDate);
+         if (startDate) {
+            match.date.$gte = new Date(startDate);
+         }
+         const end = new Date(endDate);
+         end.setHours(23, 59, 59, 999);
+         match.date.$lte = end;
       }
 
-      if (endDate) {
-         match.date.$lte = new Date(endDate);
-      }
+      const present = await Attendance.countDocuments({
+         ...match,
+         status: "present"
+      });
 
-   }
+      const leave = await Attendance.countDocuments({
+         ...match,
+         status: "leave"
+      });
 
-   const present = await Attendance.countDocuments({
-      ...match,
-      status: "present"
-   });
+      const absent = await Attendance.countDocuments({
+         ...match,
+         status: "absent"
+      });
 
-   const leave = await Attendance.countDocuments({
-      ...match,
-      status: "leave"
-   });
+      const totalRecords = present + leave + absent;
 
-   const absent = await Attendance.countDocuments({
-      ...match,
-      status: "absent"
-   });
+      const attendancePercentage =
+         totalRecords === 0 ? 0 : ((present / totalRecords) * 100).toFixed(2);
 
-   const topPerformers = await Attendance.aggregate([
-      { $match: { ...match, status: "present" } },
+      const leavePercentage =
+         totalRecords === 0 ? 0 : ((leave / totalRecords) * 100).toFixed(2);
 
-      {
-         $group: {
-            _id: "$userId",
-            presentDays: { $sum: 1 }
-         }
-      },
+      const absentPercentage =
+         totalRecords === 0 ? 0 : ((absent / totalRecords) * 100).toFixed(2);
 
-      { $sort: { presentDays: -1 } },
-      { $limit: 3 },
+      console.log("MATCH FILTER:", match);
 
-      {
-         $lookup: {
-            from: "users",
-            localField: "_id",
-            foreignField: "_id",
-            as: "user"
-         }
-      },
 
-      { $unwind: "$user" },
+      const trend = await Attendance.aggregate([
+         { $match: match },
 
-      {
-         $project: {
-            name: "$user.name",
-            presentDays: 1
-         }
-      }
-   ]);
+         {
+            $group: {
+               _id: {
+                  $dateToString: {
+                     format: "%Y-%m-%d",
+                     date: { $toDate: "$date" }
+                  }
+               },
 
-   const lowPerformers = await Attendance.aggregate([
+               present: {
+                  $sum: {
+                     $cond: [{ $eq: ["$status", "present"] }, 1, 0]
+                  }
+               },
 
-      { $match: match },
+               total: { $sum: 1 }
+            }
+         },
 
-      {
-         $group: {
-            _id: "$userId",
-            presentDays: {
-               $sum: {
-                  $cond: [{ $eq: ["$status", "present"] }, 1, 0]
+         {
+            $project: {
+               date: "$_id",
+
+               percentage: {
+                  $cond: [
+                     { $eq: ["$total", 0] },
+                     0,
+                     {
+                        $multiply: [
+                           { $divide: ["$present", "$total"] },
+                           100
+                        ]
+                     }
+                  ]
                }
             }
-         }
-      },
+         },
 
-      { $sort: { presentDays: 1 } },
-      { $limit: 3 },
+         { $sort: { date: 1 } }
 
-      {
-         $lookup: {
-            from: "users",
-            localField: "_id",
-            foreignField: "_id",
-            as: "user"
-         }
-      },
+      ]);
+      console.log("TREND RESULT:", trend);
 
-      { $unwind: "$user" },
+      res.json({
+         present,
+         leave,
+         absent,
+         attendancePercentage,
+         leavePercentage,
+         absentPercentage,
+         trend
+      });
 
-      {
-         $project: {
-            name: "$user.name",
-            presentDays: 1
-         }
-      }
+   } catch (error) {
 
-   ]);
-   res.json({
-      present,
-      leave,
-      absent,
-      topPerformers,
-      lowPerformers
-   });
+      console.error(error);
+
+      res.status(500).json({
+         message: "Analytics server error",
+         error: error.message
+      });
+
+   }
 };

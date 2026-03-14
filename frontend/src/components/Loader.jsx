@@ -2,7 +2,7 @@ import React from "react";
 
 function Loader() {
   return (
-    <div className="h-screen flex flex-col items-center justify-center bg-gray-100">
+    <div className="h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
 
       <div className="flex gap-2">
 

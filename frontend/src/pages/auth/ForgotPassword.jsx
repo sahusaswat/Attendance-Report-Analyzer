@@ -1,85 +1,103 @@
-import React from 'react'
-import { useState } from 'react'
-import instance from '../../api/axiosApi'
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import instance from "../../api/axiosApi";
 
 function ResetPassword() {
+
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
-  const [loading, setloading] = useState(false)
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
-      setloading(true)
+      setLoading(true);
+
       const res = await instance.post("/auth/forgotpassword", { email });
-      alert(res.data.message);
+
+      setMessage(res.data.message);
+
     } catch (error) {
-      setMessage(error.response?.data?.message || "Something went wrong!")
+
+      setMessage(error.response?.data?.message || "Something went wrong");
+
     } finally {
-      setloading(false)
+
+      setLoading(false);
+
     }
-  }
+  };
+
   return (
-    <div>
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4 sm:px-6">
 
-        <div className="bg-white shadow-xl rounded-xl w-full max-w-md p-8">
+      <div className="bg-white shadow-xl rounded-xl w-full max-w-md p-6 sm:p-8">
 
-          {/* Heading */}
-          <div className="text-center mb-6">
-            <h1 className="text-3xl font-bold text-gray-800">
-              Forgot Password
-            </h1>
+        {/* Heading */}
+        <div className="text-center mb-6">
 
-            <p className="text-gray-500 mt-2 text-sm">
-              Enter your email and we'll send you a reset link.
-            </p>
-          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+            Forgot Password
+          </h1>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <p className="text-gray-500 mt-2 text-sm sm:text-base">
+            Enter your email and we'll send you a reset link.
+          </p>
 
-            <input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+        </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition cursor-pointer"
-            >
-              Send Reset Link
-            </button>
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
 
-          </form>
+          <input
+            type="email"
+            placeholder="Enter your email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="w-full p-3 text-sm sm:text-base border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
 
-          {/* Message */}
-          {message && (
-            <p className="text-center text-sm text-green-600 mt-4">
-              {message}
-            </p>
-          )}
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full py-2.5 rounded-lg font-medium transition
+              ${loading
+                ? "bg-blue-300 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700 text-white"
+              }`}
+          >
 
-          {/* Back to login */}
-          <div className="mt-6 text-center">
-            <a
-              href="/login"
-              className="text-blue-600 text-sm hover:underline"
-            >
-              Back to Login
-            </a>
-          </div>
+            {loading ? "Sending..." : "Send Reset Link"}
+
+          </button>
+
+        </form>
+
+        {/* Message */}
+        {message && (
+          <p className="text-center text-sm mt-4 text-green-600">
+            {message}
+          </p>
+        )}
+
+        {/* Back to Login */}
+        <div className="mt-6 text-center">
+
+          <Link
+            to="/login"
+            className="text-blue-600 text-sm sm:text-base hover:underline"
+          >
+            Back to Login
+          </Link>
 
         </div>
 
       </div>
+
     </div>
-  )
+  );
 }
 
-export default ResetPassword
+export default ResetPassword;

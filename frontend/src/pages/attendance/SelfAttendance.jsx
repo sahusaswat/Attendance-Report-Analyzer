@@ -43,23 +43,23 @@ function SelfAttendance() {
 
   return (
 
-    <div className="min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-gray-100">
 
       <Navbar />
 
-      <div className="ml-64 p-6">
+      <div className="flex-1 md:ml-64 p-4 md:p-8">
 
         {/* Page Title */}
 
-        <h1 className="text-2xl font-semibold mb-6">
+        <h1 className="text-2xl md:text-3xl font-semibold mb-6">
           My Attendance
         </h1>
 
         {/* Filter Card */}
 
-        <div className="bg-white shadow rounded-xl p-6 mb-6">
+        <div className="bg-white shadow rounded-xl p-4 md:p-6 mb-6">
 
-          <div className="flex flex-wrap gap-4 items-end">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
 
             <div>
 
@@ -71,7 +71,7 @@ function SelfAttendance() {
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="border rounded-lg px-3 py-2"
+                className="border rounded-lg px-3 py-2 w-full"
               />
 
             </div>
@@ -86,14 +86,14 @@ function SelfAttendance() {
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="border rounded-lg px-3 py-2"
+                className="border rounded-lg px-3 py-2 w-full"
               />
 
             </div>
 
             <button
               onClick={fetchAttendance}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition w-full sm:w-auto"
             >
               {loading ? "Loading..." : "View Report"}
             </button>
@@ -106,85 +106,90 @@ function SelfAttendance() {
 
         <div className="bg-white shadow rounded-xl overflow-hidden">
 
-          <table className="w-full text-left">
+          <div className="overflow-x-auto">
 
-            <thead className="bg-gray-100 text-gray-700">
+            <table className="min-w-full text-left">
 
-              <tr>
-                <th className="p-3">Date</th>
-                <th className="p-3">Check In</th>
-                <th className="p-3">Check Out</th>
-                <th className="p-3">Entry</th>
-                <th className="p-3">Status</th>
-              </tr>
-
-            </thead>
-
-            <tbody>
-
-              {attendance.length === 0 && !loading && (
+              <thead className="bg-gray-100 text-gray-700">
 
                 <tr>
-
-                  <td colSpan="5" className="p-6 text-center text-gray-400">
-                    No attendance records found
-                  </td>
-
+                  <th className="p-3">Date</th>
+                  <th className="p-3">Check In</th>
+                  <th className="p-3">Check Out</th>
+                  <th className="p-3">Entry</th>
+                  <th className="p-3">Status</th>
                 </tr>
 
-              )}
+              </thead>
 
-              {attendance.map((record) => (
+              <tbody>
 
-                <tr
-                  key={record._id}
-                  className="border-t hover:bg-gray-50"
-                >
+                {attendance.length === 0 && !loading && (
 
-                  <td className="p-3">
-                    {new Date(record.date).toLocaleDateString("en-IN")}
-                  </td>
+                  <tr>
 
-                  <td className="p-3">
-                    {record.inTime || "-"}
-                  </td>
+                    <td colSpan="5" className="p-6 text-center text-gray-400">
+                      No attendance records found
+                    </td>
 
-                  <td className="p-3">
-                    {record.outTime || "-"}
-                  </td>
+                  </tr>
 
-                  <td className="p-3">
+                )}
 
-                    <span
-                      className={`px-3 py-1 rounded-full text-sm
-                        ${
-                          record.status === "present" && record.lateStatus
+                {attendance.map((record) => (
+
+                  <tr
+                    key={record._id}
+                    className="border-t hover:bg-gray-50"
+                  >
+
+                    <td className="p-3">
+                      {new Date(record.date).toLocaleDateString("en-IN")}
+                    </td>
+
+                    <td className="p-3">
+                      {record.inTime || "-"}
+                    </td>
+
+                    <td className="p-3">
+                      {record.outTime || "-"}
+                    </td>
+
+                    <td className="p-3">
+
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm
+                        ${record.status === "present" && record.lateStatus
                             ? "bg-red-100 text-red-700"
                             : record.status === "present"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-gray-100 text-gray-700"
-                        }`}
-                    >
-                      {record.status === "present"
-                        ? record.lateStatus
-                          ? "Late"
-                          : "On Time"
-                        : record.status}
-                    </span>
+                              ? "bg-green-100 text-green-700"
+                              : "bg-gray-100 text-gray-700"
+                          }`}
+                      >
 
-                  </td>
+                        {record.status === "present"
+                          ? record.lateStatus
+                            ? "Late"
+                            : "On Time"
+                          : record.status}
 
-                  <td className="p-3 capitalize">
-                    {record.status}
-                  </td>
+                      </span>
 
-                </tr>
+                    </td>
 
-              ))}
+                    <td className="p-3 capitalize">
+                      {record.status}
+                    </td>
 
-            </tbody>
+                  </tr>
 
-          </table>
+                ))}
+
+              </tbody>
+
+            </table>
+
+          </div>
 
         </div>
 
